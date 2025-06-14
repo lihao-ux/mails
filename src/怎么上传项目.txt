@@ -1,0 +1,14 @@
+方法一：本地已有项目文件夹
+1. 初始化Git仓库
+bashcd /path/to/your/project
+git init
+2. 添加文件到暂存区
+bashgit add .
+3. 提交文件
+bashgit commit -m "Initial commit"
+4. 添加远程仓库
+bashgit remote add origin https://github.com/username/repository-name.git
+5. 推送到远程仓库
+bashgit push -u origin master
+# 或者推送到main分支
+git push -u origin main
