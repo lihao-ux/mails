@@ -11,8 +11,13 @@ import {
     Stack,
     Typography,
     Box,
-    Checkbox
+    Checkbox,
+    TextField, InputAdornment, FormControlLabel, TablePagination
 } from '@mui/material';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import ja from 'date-fns/locale/ja'; // 导入日语本地化
+import SearchIcon from '@mui/icons-material/Search';
 import MailDetailDialog from '../MailDetailDialog'; // 导入封装好的对话框组件
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
@@ -27,11 +32,47 @@ import {
     Warning,           // 警告 (黄色)
     Error
 } from '@mui/icons-material';
-const MailListTable = ({ mails, handleDetailClick }) => {
+const MailListTable = () => {
+    const [searchQuery, setSearchQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const [warnOpen, setWarnOpen] = useState(false);
     const [detailOpen, setDetailOpen] = useState(false);
     const [selectedMail, setSelectedMail] = useState(null);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const mails = [
+        { id: 1, status: '1', category: '人材情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 2, status: '2', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 3, status: '3', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 4, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 5, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 6, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 7, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 8, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 9, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 10, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 11, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' }
+        // ... 其他邮件数据
+    ];
+    // 在组件中添加状态
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    // 分页处理函数
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    // 计算当前页数据
+    const paginatedMails = mails.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+    );
     // 全选/取消全选
     const handleSelectAll = (event) => {
         if (event.target.checked) {
@@ -69,22 +110,257 @@ const MailListTable = ({ mails, handleDetailClick }) => {
 
         setSelected(newSelected);
     };
+
+    // 状态选项（显示汉字，值用英文）
+    const [status, setStatus] = useState({
+        unread: false,    // 未読
+        inProgress: false, // 処理中
+        completed: false   // 完了
+    });
+
+    const [category, setCategory] = useState({
+        caseInfo: false,   // 案件情報
+        talentInfo: false  // 人材情報
+    });
+
+    // 处理状态变化
+    const handleStatusChange = (key) => (event) => {
+        setStatus(prev => ({ ...prev, [key]: event.target.checked }));
+    };
+
+    const handleCategoryChange = (key) => (event) => {
+        setCategory(prev => ({ ...prev, [key]: event.target.checked }));
+    };
+
+    // 提交搜索
+    const handleSearch = () => {
+        const activeStatus = Object.keys(status).filter(key => status[key]);
+        const activeCategory = Object.keys(category).filter(key => category[key]);
+
+        console.log('搜索参数:', {
+            searchQuery,
+            status: activeStatus,
+            category: activeCategory
+        });
+    };
     // 检查是否选中
     const isSelected = (id) => selected.indexOf(id) !== -1;
     const renderStatusIcon = (status) => {
-        if (status === '1') {
-            return <CheckCircle fontSize="small" color="success" />;
-        }
-        if (status === '2') {
-            return <Warning fontSize="small" color="warning" />;
-        }
-        if (status === '3') {
-            return <Error fontSize="small" color="error" />;
-        }
-        return <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>{status}</Typography>;
+        const iconStyle = { fontSize: '14px' }; // 调整图标大小
+
+        if (status === '1') return <><CheckCircle sx={iconStyle} color="success" /> 解約成功</>;
+        if (status === '2') return <><Warning sx={iconStyle} color="warning" /> 解約失敗</>;
+        if (status === '3') return <><Error sx={iconStyle} color="error" /> 解約対象</>;
+        return <>{status}</>;
     };
     return (
         <Box>
+            <Box sx={{ p: 2, backgroundColor: '#e8f5e9', borderRadius: 1, mb: 2 }}>
+                {/* 第一行：筛选条件 */}
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 3,
+                    mb: 2
+                }}>
+                    {/* ステータス标签和选项 */}
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="subtitle2" sx={{ mr: 1, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                            ステータス:
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={status.unread}
+                                        onChange={handleStatusChange('unread')}
+                                        size="small"
+                                    />
+                                }
+                                label="解約成功"
+                                sx={{ mr: 0 }}
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={status.inProgress}
+                                        onChange={handleStatusChange('inProgress')}
+                                        size="small"
+                                    />
+                                }
+                                label="解約失敗"
+                                sx={{ mr: 0 }}
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={status.completed}
+                                        onChange={handleStatusChange('completed')}
+                                        size="small"
+                                    />
+                                }
+                                label="解約対象"
+                                sx={{ mr: 0 }}
+                            />
+                        </Box>
+                    </Box>
+
+                    {/* 分類标签和选项 */}
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="subtitle2" sx={{ mr: 1, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                            分類:
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={category.caseInfo}
+                                        onChange={handleCategoryChange('caseInfo')}
+                                        size="small"
+                                    />
+                                }
+                                label="案件情報"
+                                sx={{ mr: 0 }}
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={category.talentInfo}
+                                        onChange={handleCategoryChange('talentInfo')}
+                                        size="small"
+                                    />
+                                }
+                                label="人材情報"
+                                sx={{ mr: 0 }}
+                            />
+                        </Box>
+                    </Box>
+                </Box>
+
+                {/* 第二行：搜索框 */}
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    alignItems: 'center',
+                    p: 2,
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: 1
+                }}>
+                    {/* 受信日時 日期范围选择框 (左侧) */}
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: '50%',
+                        gap: 1
+                    }}>
+                        <Typography variant="subtitle2" sx={{
+                            fontWeight: 'bold',
+                            whiteSpace: 'nowrap',
+                            width: '80px' // 固定标题宽度
+                        }}>
+                            受信日時:
+                        </Typography>
+                        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ja}>
+                            <Box sx={{
+                                display: 'flex',
+                                gap: 1,
+                                height: '55px',
+                                alignItems: 'center',
+                                px: 1
+                            }}>
+                                <DatePicker
+                                    inputFormat="yyyy/MM/dd"
+                                    value={startDate}
+                                    onChange={setStartDate}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            size="small"
+                                            variant="standard"
+                                            InputProps={{ ...params.InputProps, disableUnderline: true }}
+                                            sx={{
+                                                width: '45%',
+                                                '& .MuiInputBase-root': {
+                                                    height: '40px',
+                                                    border: 'none'
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                />
+                                <Typography>〜</Typography>
+                                <DatePicker
+                                    inputFormat="yyyy/MM/dd"
+                                    value={endDate}
+                                    onChange={setEndDate}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            size="small"
+                                            variant="standard"
+                                            InputProps={{ ...params.InputProps, disableUnderline: true }}
+                                            sx={{
+                                                width: '45%',
+                                                '& .MuiInputBase-root': {
+                                                    height: '40px',
+                                                    border: 'none'
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                        </LocalizationProvider>
+                    </Box>
+
+                    {/* 搜索框 (右侧) */}
+                    <Box sx={{ width: '50%' }}>
+                        <TextField
+                            fullWidth
+                            placeholder="送信者または件名で検索"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            size="small"
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            sx={{
+                                                height: '40px',
+                                                borderTopLeftRadius: 0,
+                                                borderBottomLeftRadius: 0,
+                                                fontSize: '0.875rem'
+                                            }}
+                                        >
+                                            検索
+                                        </Button>
+                                    </InputAdornment>
+                                ),
+                                sx: {
+                                    paddingRight: 0,
+                                    height: '40px'
+                                }
+                            }}
+                            sx={{
+                                backgroundColor: 'white',
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 1,
+                                    paddingRight: 0,
+                                    height: '40px'
+                                }
+                            }}
+                        />
+                    </Box>
+                </Box>
+            </Box>
             <TableContainer component={Paper} elevation={1} sx={{ maxHeight: 600 }}>
                 <Table stickyHeader sx={{ minWidth: 800 }}>
                     <TableHead sx={{
@@ -116,7 +392,7 @@ const MailListTable = ({ mails, handleDetailClick }) => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {mails.map((mail) => {
+                        {paginatedMails.map((mail) => {
                             const isItemSelected = isSelected(mail.id);
                             return (
                                 <TableRow
@@ -155,6 +431,33 @@ const MailListTable = ({ mails, handleDetailClick }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Paper elevation={0} sx={{
+                borderTop: '1px solid #e0e0e0',
+                borderBottom: '1px solid #e0e0e0'
+            }}>
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 50]}
+                    component="div"
+                    count={mails.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelRowsPerPage="ページあたりの行数:"
+                    labelDisplayedRows={({ from, to, count }) =>
+                        `${from}～${to}件 / 全${count}件`
+                    }
+                    sx={{
+                        '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                            fontSize: '0.8rem'
+                        }
+                    }}
+                    SelectProps={{
+                        variant: 'outlined',
+                        size: 'small'
+                    }}
+                />
+            </Paper>
             <Box sx={{
                 mt: 2, display: 'flex',
                 justifyContent: 'flex-end'
