@@ -14,11 +14,11 @@ import {
     Checkbox,
     TextField, InputAdornment, FormControlLabel, TablePagination
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ja from 'date-fns/locale/ja'; // 导入日语本地化
 import SearchIcon from '@mui/icons-material/Search';
-import MailDetailDialog from '../MailDetailDialog'; // 导入封装好的对话框组件
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
@@ -33,11 +33,10 @@ import {
     Error
 } from '@mui/icons-material';
 const MailListTable = () => {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const [warnOpen, setWarnOpen] = useState(false);
-    const [detailOpen, setDetailOpen] = useState(false);
-    const [selectedMail, setSelectedMail] = useState(null);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const mails = [
@@ -87,14 +86,8 @@ const MailListTable = () => {
             setWarnOpen(true)
         } else {
             const firstSelectedId = selected[0];
-            const mail = mails.find(mail => mail.id === firstSelectedId);
-            console.log(mail)
-            setSelectedMail(mail);
-            setDetailOpen(true);
+            navigate(`/mails/${firstSelectedId}`); // 跳转到详情页
         }
-    };
-    const handleCloseDialog = () => {
-        setDetailOpen(false);
     };
     const handleCheckboxClick = (event, id) => {
         event.stopPropagation(); // 阻止事件冒泡到行
@@ -518,11 +511,6 @@ const MailListTable = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-            <MailDetailDialog
-                open={detailOpen}
-                onClose={handleCloseDialog}
-                mail={selectedMail}
-            />
         </Box>
     );
 };
