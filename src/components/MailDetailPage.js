@@ -32,7 +32,8 @@ const MailDetailPage = () => {
     { id: 2, name: '', age: '', skill: '', availableTime: '', hourlyRate: '¥8500', details: '' },
     { id: 3, name: '', age: '', skill: '', availableTime: '', hourlyRate: '¥8500', details: '' }
   ]);
-
+   const mail = 
+        { id: 1, status: '1', category: '人材情報', date: '2025/03/08 20:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' }
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
@@ -42,6 +43,7 @@ const MailDetailPage = () => {
   };
 
   const addPersonnelRow = () => {
+    if(personnel.length>0){
     const newId = Math.max(...personnel.map(p => p.id)) + 1;
     setPersonnel([...personnel, {
       id: newId,
@@ -52,6 +54,19 @@ const MailDetailPage = () => {
       hourlyRate: '¥8500',
       details: ''
     }]);
+    }else{
+      setPersonnel([...personnel, {
+      id: 1,
+      name: '',
+      age: '',
+      skill: '',
+      availableTime: '',
+      hourlyRate: '¥8500',
+      details: ''
+    }]);
+    }
+
+    console.log(personnel)
   };
 
   const deletePersonnelRow = (id) => {
@@ -116,7 +131,7 @@ const MailDetailPage = () => {
             </Typography>
             <TextField
               fullWidth
-              value="2023年09月08日 19:40:53"
+              value={mail.date}
               variant="outlined"
               size="small"
               InputProps={{ readOnly: true }}
@@ -130,7 +145,7 @@ const MailDetailPage = () => {
             </Typography>
             <TextField
               fullWidth
-              value="yamada@company.co.jp"
+              value={mail.sender}
               variant="outlined"
               size="small"
               InputProps={{ readOnly: true }}
@@ -144,7 +159,7 @@ const MailDetailPage = () => {
             </Typography>
             <TextField
               fullWidth
-              value="契約者の情報について"
+               value={mail.subject}
               variant="outlined"
               size="small"
               InputProps={{ readOnly: true }}
