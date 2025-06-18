@@ -7,6 +7,7 @@ import MainLayout from './components/MainLayout';
 import MailListTable from './components/tables/MailListTable';
 import MailDetailPage from './components/MailDetailPage';
 import StaffListTable from './components/tables/StaffListTable';
+import ProjectTable from './components/tables/ProjectTable';
 
 // import ProjectListPage from './pages/ProjectListPage';
 function App() {
@@ -42,6 +43,16 @@ function App() {
               <Box >
                 <Box>
                   <StaffListTable />
+                </Box>
+              </Box>
+            }
+          />
+          <Route
+            path="projects"
+            element={
+              <Box >
+                <Box>
+                  <ProjectTable />
                 </Box>
               </Box>
             }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+    TextField,
     TableContainer,
     Table,
     TableHead,
@@ -12,19 +13,35 @@ import {
     Select,
     MenuItem,
     Button,
-    Box, TablePagination, TextField, InputAdornment, FormControlLabel, Checkbox
+    Box, TablePagination, InputAdornment, FormControlLabel, Checkbox
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import SearchIcon from '@mui/icons-material/Search';
 import {
     CheckCircle,       // 通过 (绿色)
     Warning,           // 警告 (黄色)
     Error
 } from '@mui/icons-material';
-const StaffListTable = () => {
+const ProjectTable = () => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [selected, setSelected] = useState([]);
+    const isSelected = (id) => selected.indexOf(id) !== -1;
     const [selectedValues, setSelectedValues] = useState('');
+    const handleCheckboxClick = (event, id) => {
+        event.stopPropagation(); // 阻止事件冒泡到行
+
+        const selectedIndex = selected.indexOf(id);
+        let newSelected = [];
+
+        if (selectedIndex === -1) {
+            newSelected = [...selected, id];
+        } else {
+            newSelected = selected.filter(item => item !== id);
+        }
+
+        setSelected(newSelected);
+    };
     const staffs = [
         {
             id: 1,
@@ -177,13 +194,14 @@ const StaffListTable = () => {
             aiRecommendedProjects: "DeFiプロジェクト開発"
         }
     ];
-    const handleChange = (value) => {
-        setSelectedValues((prev) =>
-            prev.includes(value)
-                ? prev.filter((v) => v !== value) // 如果已选中，则移除
-                : [...prev, value] // 如果未选中，则添加
-        );
-        console.log(selectedValues);
+    // 全选/取消全选
+    const handleSelectAll = (event) => {
+        if (event.target.checked) {
+            const newSelecteds = staffs.map((staff) => staff.id);
+            setSelected(newSelecteds);
+            return;
+        }
+        setSelected([]);
     };
     const [rowsPerPage, setRowsPerPage] = useState(10);
     // 分页处理函数
@@ -223,6 +241,14 @@ const StaffListTable = () => {
         setStatusValues((prev) => ({ ...prev, [staffId]: newStatus }));
         console.log(staffs)
     };
+    const handleChange = (value) => {
+        setSelectedValues((prev) =>
+            prev.includes(value)
+                ? prev.filter((v) => v !== value) // 如果已选中，则移除
+                : [...prev, value] // 如果未选中，则添加
+        );
+        console.log(selectedValues);
+    };
     const styles = {
         '1': { // 稼働中
             bgcolor: '#d8edd9',  // 比 #e8f5e9 深一点的浅绿色
@@ -253,7 +279,7 @@ const StaffListTable = () => {
         <Box>
             <TextField
                 fullWidth
-                placeholder="名前または件名で検索"
+                placeholder="案件名またはスキルで検索"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 size="small"
@@ -419,6 +445,14 @@ const StaffListTable = () => {
                         }
                     }}>
                         <TableRow>
+                            <TableCell padding="checkbox">
+                                <Checkbox
+                                    color="primary"
+                                    indeterminate={selected.length > 0 && selected.length < staffs.length}
+                                    checked={staffs.length > 0 && selected.length === staffs.length}
+                                    onChange={handleSelectAll}
+                                />
+                            </TableCell>
                             <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '120px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>名前</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>ステータス</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>年齢</TableCell>
@@ -429,53 +463,62 @@ const StaffListTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {staffs.map((staff) => (
-                            <TableRow key={staff.id} hover sx={{ cursor: 'pointer', height: '48px' }}>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.staffName}
-                                </TableCell>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    <Select
-                                        value={statusValues[staff.id] || staff.status}
-                                        onChange={(e) => handleStatusChange(staff.id, e.target.value)}
-                                        sx={(theme) => {
-                                            const value = statusValues[staff.id] || staff.status;
-                                            const style = getSelectStyle(value, theme);
-                                            return {
-                                                height: '32px',
-                                                fontSize: '12px',
-                                                backgroundColor: style.bgcolor,
-                                                color: style.color,
-                                                '& .MuiSelect-icon': { color: style.iconColor },
-                                                '&:hover': {
+                        {staffs.map((staff) => {
+                            const isItemSelected = isSelected(staff.id);
+                            return (
+                                <TableRow key={staff.id}
+                                    hover
+                                    sx={{ cursor: 'pointer', height: '48px' }}
+                                    onClick={(event) => handleCheckboxClick(event, staff.id)}
+                                    role="checkbox"
+                                    aria-checked={isItemSelected}
+                                    selected={isItemSelected}>
+                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                        {staff.staffName}
+                                    </TableCell>
+                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                        <Select
+                                            value={statusValues[staff.id] || staff.status}
+                                            onChange={(e) => handleStatusChange(staff.id, e.target.value)}
+                                            sx={(theme) => {
+                                                const value = statusValues[staff.id] || staff.status;
+                                                const style = getSelectStyle(value, theme);
+                                                return {
+                                                    height: '32px',
+                                                    fontSize: '12px',
                                                     backgroundColor: style.bgcolor,
-                                                    opacity: 0.9
-                                                }
-                                            };
-                                        }}
-                                    >
-                                        <MenuItem value="1">稼働中</MenuItem>
-                                        <MenuItem value="2">待機中</MenuItem>
-                                        <MenuItem value="3">調整中</MenuItem>
-                                    </Select>
-                                </TableCell>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.staffAge}
-                                </TableCell>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', color: '#1976d2', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.skills}
-                                </TableCell>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.workDate}
-                                </TableCell>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.desiredSalary}
-                                </TableCell>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.aiRecommendedProjects}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                                    color: style.color,
+                                                    '& .MuiSelect-icon': { color: style.iconColor },
+                                                    '&:hover': {
+                                                        backgroundColor: style.bgcolor,
+                                                        opacity: 0.9
+                                                    }
+                                                };
+                                            }}
+                                        >
+                                            <MenuItem value="1">稼働中</MenuItem>
+                                            <MenuItem value="2">待機中</MenuItem>
+                                            <MenuItem value="3">調整中</MenuItem>
+                                        </Select>
+                                    </TableCell>
+                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                        {staff.staffAge}
+                                    </TableCell>
+                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', color: '#1976d2', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                        {staff.skills}
+                                    </TableCell>
+                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                        {staff.workDate}
+                                    </TableCell>
+                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                        {staff.desiredSalary}
+                                    </TableCell>
+                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                        {staff.aiRecommendedProjects}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -540,4 +583,4 @@ const StaffListTable = () => {
     );
 };
 
-export default StaffListTable;
+export default ProjectTable;
