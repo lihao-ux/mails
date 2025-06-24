@@ -24,6 +24,7 @@ import {
     Error
 } from '@mui/icons-material';
 const ProjectTable = () => {
+    const [locationValues, setLocationValues] = React.useState({});
     const [searchQuery, setSearchQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const isSelected = (id) => selected.indexOf(id) !== -1;
@@ -42,7 +43,7 @@ const ProjectTable = () => {
 
         setSelected(newSelected);
     };
-    const staffs = [
+    const [staffs, setStaffs] = useState([
         {
             id: 1,
             staffName: "山田太郎",
@@ -193,7 +194,7 @@ const ProjectTable = () => {
             desiredSalary: "100万円",
             aiRecommendedProjects: "DeFiプロジェクト開発"
         }
-    ];
+    ]);
     // 全选/取消全选
     const handleSelectAll = (event) => {
         if (event.target.checked) {
@@ -238,7 +239,13 @@ const ProjectTable = () => {
     const [statusValues, setStatusValues] = React.useState(
         staffs.reduce((acc, staff) => ({ ...acc, [staff.id]: staff.status }), {})
     );
-
+    const handleLocationChange = (id, value) => {
+        setLocationValues(prev => ({
+            ...prev,
+            [id]: value === "" ? "" : value, // 允许清空
+        }));
+        console.log(paginatedStaffs)
+    };
     const handleStatusChange = (staffId, newStatus) => {
         setStatusValues((prev) => ({ ...prev, [staffId]: newStatus }));
         console.log(staffs)
@@ -486,11 +493,18 @@ const ProjectTable = () => {
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
                                         <Select
-                                            value={statusValues[staff.id] || staff.status}
-                                            onChange={(e) => handleStatusChange(staff.id, e.target.value)}
+                                            value={staff.status} // 直接绑定到原数据
+                                            onChange={(e) => {
+                                                // 更新原数组
+                                                const updatedStaffs = staffs.map(item =>
+                                                    item.id === staff.id
+                                                        ? { ...item, status: e.target.value }
+                                                        : item
+                                                );
+                                                setStaffs(updatedStaffs);
+                                            }}
                                             sx={(theme) => {
-                                                const value = statusValues[staff.id] || staff.status;
-                                                const style = getSelectStyle(value, theme);
+                                                const style = getSelectStyle(staff.status, theme); // 直接使用 staff.status
                                                 return {
                                                     height: '32px',
                                                     fontSize: '12px',
@@ -510,7 +524,22 @@ const ProjectTable = () => {
                                         </Select>
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                        {staff.staffAge}
+                                        {/*{staff.staffAge}*/}
+                                        <TextField
+                                            value={staff.staffAge} // 直接绑定到原数据
+                                            onChange={(e) => {
+                                                // 更新原数组
+                                                const updatedStaffs = staffs.map(item =>
+                                                    item.id === staff.id
+                                                        ? { ...item, staffAge: e.target.value }
+                                                        : item
+                                                );
+                                                setStaffs(updatedStaffs); // 触发重新渲染
+                                            }}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                        />
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', color: '#1976d2', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
                                         {staff.skills}
