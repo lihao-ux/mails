@@ -223,6 +223,7 @@ const StaffListTable = () => {
         setStatusValues((prev) => ({ ...prev, [staffId]: newStatus }));
         console.log(staffs)
     };
+    
     const styles = {
         '1': { // 稼働中
             bgcolor: '#d8edd9',  // 比 #e8f5e9 深一点的浅绿色
@@ -429,7 +430,7 @@ const StaffListTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {staffs.map((staff) => (
+                        {paginatedStaffs.map((staff) => (
                             <TableRow key={staff.id} hover sx={{ cursor: 'pointer', height: '48px' }}>
                                 <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
                                     {staff.staffName}

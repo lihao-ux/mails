@@ -206,6 +206,8 @@ const ProjectTable = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     // 分页处理函数
     const handleChangePage = (event, newPage) => {
+        console.log(newPage);
+
         setPage(newPage);
     };
 
@@ -345,7 +347,7 @@ const ProjectTable = () => {
                                 }}
                             />
                         }
-                        label="稼働中"
+                        label="募集中"
                         sx={{
                             height: "30px",
                             width: "95px",
@@ -378,7 +380,7 @@ const ProjectTable = () => {
                                 }}
                             />
                         }
-                        label="待機中"
+                        label="終了"
                         sx={{
                             height: "30px",
                             width: "95px",
@@ -410,7 +412,7 @@ const ProjectTable = () => {
                                 }}
                             />
                         }
-                        label="調整中"
+                        label="保留中"
                         sx={{
                             height: "30px",
                             width: "95px",
@@ -453,17 +455,17 @@ const ProjectTable = () => {
                                     onChange={handleSelectAll}
                                 />
                             </TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '120px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>名前</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '120px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>案件名</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>ステータス</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>年齢</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '400px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>スキル</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>稼働可能時間</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>単価希望</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '400px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>AI推薦案件</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>場所</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '400px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>スキル条件</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>単価</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>期間</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '400px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>AI推薦技術者</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {staffs.map((staff) => {
+                        {paginatedStaffs.map((staff) => {
                             const isItemSelected = isSelected(staff.id);
                             return (
                                 <TableRow key={staff.id}
@@ -473,6 +475,12 @@ const ProjectTable = () => {
                                     role="checkbox"
                                     aria-checked={isItemSelected}
                                     selected={isItemSelected}>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            checked={isItemSelected}
+                                            onChange={(event) => handleCheckboxClick(event, staff.id)}
+                                        />
+                                    </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
                                         {staff.staffName}
                                     </TableCell>
@@ -496,9 +504,9 @@ const ProjectTable = () => {
                                                 };
                                             }}
                                         >
-                                            <MenuItem value="1">稼働中</MenuItem>
-                                            <MenuItem value="2">待機中</MenuItem>
-                                            <MenuItem value="3">調整中</MenuItem>
+                                            <MenuItem value="1">募集中</MenuItem>
+                                            <MenuItem value="2">終　了</MenuItem>
+                                            <MenuItem value="3">保留中</MenuItem>
                                         </Select>
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
