@@ -405,7 +405,8 @@ const StaffListTable = () => {
                     />
                 </Stack>
             </Box>
-            <TableContainer component={Paper} elevation={1} sx={{ maxHeight: 600 }}>
+            <TableContainer component={Paper} elevation={1} sx={{ maxHeight: 600,overflow: 'auto',  // 添加滚动条
+                position: 'relative'}}>
                 <Table stickyHeader sx={{ minWidth: 800 }}>
                     <TableHead sx={{
                         backgroundColor: '#f5f5f5',
@@ -416,7 +417,10 @@ const StaffListTable = () => {
                             whiteSpace: 'nowrap',
                             fontSize: '0.8rem',
                             py: 1,
-                            lineHeight: '1.5'
+                            lineHeight: '1.5',
+                            position: 'sticky',  // 固定表头
+                            top: 0,              // 固定在顶部
+                            zIndex: 1            // 确保表头在内容之上
                         }
                     }}>
                         <TableRow>

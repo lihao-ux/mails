@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
     TextField,
     TableContainer,
@@ -23,6 +23,7 @@ import {
     Warning,           // 警告 (黄色)
     Error
 } from '@mui/icons-material';
+
 const ProjectTable = () => {
     const [locationValues, setLocationValues] = React.useState({});
     const [searchQuery, setSearchQuery] = useState('');
@@ -226,18 +227,18 @@ const ProjectTable = () => {
 
     const renderStatusIcon = (status) => {
         if (status === '1') {
-            return <CheckCircle fontSize="small" color="success" />;
+            return <CheckCircle fontSize="small" color="success"/>;
         }
         if (status === '2') {
-            return <Warning fontSize="small" color="warning" />;
+            return <Warning fontSize="small" color="warning"/>;
         }
         if (status === '3') {
-            return <Error fontSize="small" color="error" />;
+            return <Error fontSize="small" color="error"/>;
         }
-        return <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>{status}</Typography>;
+        return <Typography variant="body2" sx={{fontSize: '0.75rem'}}>{status}</Typography>;
     };
     const [statusValues, setStatusValues] = React.useState(
-        staffs.reduce((acc, staff) => ({ ...acc, [staff.id]: staff.status }), {})
+        staffs.reduce((acc, staff) => ({...acc, [staff.id]: staff.status}), {})
     );
     const handleLocationChange = (id, value) => {
         setLocationValues(prev => ({
@@ -247,7 +248,7 @@ const ProjectTable = () => {
         console.log(paginatedStaffs)
     };
     const handleStatusChange = (staffId, newStatus) => {
-        setStatusValues((prev) => ({ ...prev, [staffId]: newStatus }));
+        setStatusValues((prev) => ({...prev, [staffId]: newStatus}));
         console.log(staffs)
     };
     const handleChange = (value) => {
@@ -295,7 +296,7 @@ const ProjectTable = () => {
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position="start">
-                            <SearchIcon />
+                            <SearchIcon/>
                         </InputAdornment>
                     ),
                     endAdornment: (
@@ -339,7 +340,7 @@ const ProjectTable = () => {
                 borderRadius: 1,
                 boxShadow: '0px 2px 4px rgba(0,0,0,0.1)'
             }}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>ステータスフィルター</Typography>
+                <Typography variant="subtitle2" sx={{mb: 1}}>ステータスフィルター</Typography>
                 <Stack direction="row" spacing={3} alignItems="center">
                     {/* 稼働中 (value="1") */}
                     <FormControlLabel
@@ -350,7 +351,7 @@ const ProjectTable = () => {
                                 value="1"
                                 sx={{
                                     color: "inherit",
-                                    "&.Mui-checked": { color: styles["1"].iconColor }, // 仅选中时图标变色
+                                    "&.Mui-checked": {color: styles["1"].iconColor}, // 仅选中时图标变色
                                 }}
                             />
                         }
@@ -383,7 +384,7 @@ const ProjectTable = () => {
                                 value="2"
                                 sx={{
                                     color: "inherit",
-                                    "&.Mui-checked": { color: styles["2"].iconColor },
+                                    "&.Mui-checked": {color: styles["2"].iconColor},
                                 }}
                             />
                         }
@@ -415,7 +416,7 @@ const ProjectTable = () => {
                                 value="3"
                                 sx={{
                                     color: "inherit",
-                                    "&.Mui-checked": { color: styles["3"].iconColor },
+                                    "&.Mui-checked": {color: styles["3"].iconColor},
                                 }}
                             />
                         }
@@ -439,8 +440,12 @@ const ProjectTable = () => {
                     />
                 </Stack>
             </Box>
-            <TableContainer component={Paper} elevation={1} sx={{ maxHeight: 600 }}>
-                <Table stickyHeader sx={{ minWidth: 800 }}>
+            <TableContainer component={Paper} elevation={1} sx={{
+                maxHeight: 600,
+                overflow: 'auto',  // 添加滚动条
+                position: 'relative' // 确保固定表头
+            }}>
+                <Table stickyHeader sx={{minWidth: 800}}>
                     <TableHead sx={{
                         backgroundColor: '#f5f5f5',
                         '& .MuiTableCell-root': {
@@ -450,7 +455,10 @@ const ProjectTable = () => {
                             whiteSpace: 'nowrap',
                             fontSize: '0.8rem',
                             py: 1,
-                            lineHeight: '1.5'
+                            lineHeight: '1.5',
+                            position: 'sticky',  // 固定表头
+                            top: 0,              // 固定在顶部
+                            zIndex: 1            // 确保表头在内容之上
                         }
                     }}>
                         <TableRow>
@@ -462,13 +470,68 @@ const ProjectTable = () => {
                                     onChange={handleSelectAll}
                                 />
                             </TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '120px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>案件名</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>ステータス</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>場所</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '400px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>スキル条件</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>単価</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '100px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>期間</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', border: '1px solid #ddd', whiteSpace: 'nowrap', width: '400px', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>AI推薦技術者</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '120px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>案件名</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '100px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>ステータス</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '100px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>場所</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '400px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>スキル条件</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>単価</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '100px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>期間</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '400px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>AI推薦技術者</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -476,29 +539,41 @@ const ProjectTable = () => {
                             const isItemSelected = isSelected(staff.id);
                             return (
                                 <TableRow key={staff.id}
-                                    hover
-                                    sx={{ cursor: 'pointer', height: '48px' }}
-                                    onClick={(event) => handleCheckboxClick(event, staff.id)}
-                                    role="checkbox"
-                                    aria-checked={isItemSelected}
-                                    selected={isItemSelected}>
+                                          hover
+                                          sx={{cursor: 'pointer', height: '48px'}}
+                                          onClick={(event) => handleCheckboxClick(event, staff.id)}
+                                          role="checkbox"
+                                          aria-checked={isItemSelected}
+                                          selected={isItemSelected}>
                                     <TableCell padding="checkbox">
                                         <Checkbox
                                             checked={isItemSelected}
                                             onChange={(event) => handleCheckboxClick(event, staff.id)}
                                         />
                                     </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
                                         {staff.staffName}
                                     </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
                                         <Select
                                             value={staff.status} // 直接绑定到原数据
                                             onChange={(e) => {
                                                 // 更新原数组
                                                 const updatedStaffs = staffs.map(item =>
                                                     item.id === staff.id
-                                                        ? { ...item, status: e.target.value }
+                                                        ? {...item, status: e.target.value}
                                                         : item
                                                 );
                                                 setStaffs(updatedStaffs);
@@ -510,7 +585,7 @@ const ProjectTable = () => {
                                                     fontSize: '12px',
                                                     backgroundColor: style.bgcolor,
                                                     color: style.color,
-                                                    '& .MuiSelect-icon': { color: style.iconColor },
+                                                    '& .MuiSelect-icon': {color: style.iconColor},
                                                     '&:hover': {
                                                         backgroundColor: style.bgcolor,
                                                         opacity: 0.9
@@ -519,11 +594,17 @@ const ProjectTable = () => {
                                             }}
                                         >
                                             <MenuItem value="1">募集中</MenuItem>
-                                            <MenuItem value="2">終　了</MenuItem>
+                                            <MenuItem value="2">終 了</MenuItem>
                                             <MenuItem value="3">保留中</MenuItem>
                                         </Select>
                                     </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
                                         {/*{staff.staffAge}*/}
                                         <TextField
                                             value={staff.staffAge} // 直接绑定到原数据
@@ -531,7 +612,7 @@ const ProjectTable = () => {
                                                 // 更新原数组
                                                 const updatedStaffs = staffs.map(item =>
                                                     item.id === staff.id
-                                                        ? { ...item, staffAge: e.target.value }
+                                                        ? {...item, staffAge: e.target.value}
                                                         : item
                                                 );
                                                 setStaffs(updatedStaffs); // 触发重新渲染
@@ -541,16 +622,41 @@ const ProjectTable = () => {
                                             fullWidth
                                         />
                                     </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', color: '#1976d2', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        color: '#1976d2',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
                                         {staff.skills}
                                     </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
                                         {staff.workDate}
                                     </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
                                         {staff.desiredSalary}
                                     </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
                                         {staff.aiRecommendedProjects}
                                     </TableCell>
                                 </TableRow>
@@ -572,7 +678,7 @@ const ProjectTable = () => {
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                     labelRowsPerPage="ページあたりの行数:"
-                    labelDisplayedRows={({ from, to, count }) =>
+                    labelDisplayedRows={({from, to, count}) =>
                         `${from}～${to}件 / 全${count}件`
                     }
                     sx={{
@@ -595,9 +701,9 @@ const ProjectTable = () => {
                         size="small"
                         variant="contained"
                         color="warning"
-                        sx={{ fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto' }}
+                        sx={{fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto'}}
                     >
-                        <EditDocumentIcon fontSize="small" sx={{ mr: 1 }} />
+                        <EditDocumentIcon fontSize="small" sx={{mr: 1}}/>
                         更新
                     </Button>
                     <Button
@@ -610,7 +716,7 @@ const ProjectTable = () => {
                             px: 1.5,
                             minWidth: 'auto'
                         }}
-                        startIcon={<DeleteSweepIcon fontSize="small" />}  // ✅ 图标放在startIcon中
+                        startIcon={<DeleteSweepIcon fontSize="small"/>}  // ✅ 图标放在startIcon中
                     >
                         削除
                     </Button>

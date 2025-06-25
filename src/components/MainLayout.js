@@ -1,18 +1,18 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation,useNavigate } from 'react-router-dom';
 import { Tabs, Tab, Box, Stack } from '@mui/material';
 import AttachEmailOutlinedIcon from '@mui/icons-material/AttachEmailOutlined';
 import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 
 const MainLayout = () => {
+    const navigate = useNavigate(); // 在组件内添加
   const location = useLocation();
 
   // 根据当前路径确定激活的Tab
-  const getActiveTab = () => {
-    if (location.pathname.startsWith('/staffs')) return '/staffs';
-    if (location.pathname.startsWith('/projects')) return '/projects';
-    return '/mails'; // 默认为邮件列表
-  };
+    const getActiveTab = () => {
+        const basePath = location.pathname.split('/')[1]; // 始终取第一级路径
+        return basePath ? `/${basePath}` : '/mails'; // 处理根路径
+    };
 
   const tabSx = {
     fontWeight: 'bold',
@@ -37,8 +37,8 @@ const MainLayout = () => {
         display: 'flex'
       }}>
         <Tabs
-          value={getActiveTab()}
-          TabIndicatorProps={{ style: { backgroundColor: '#32cd32' } }}
+            value={getActiveTab()}
+            onChange={(_, newValue) => navigate(newValue)} // 直接控制路由跳转
           sx={{
             width: 'auto', // 让Tabs根据内容自适应宽度
             maxWidth: '100%',// 防止在小屏幕上溢出
@@ -48,36 +48,30 @@ const MainLayout = () => {
           <Tab
             value="/mails"
             label={
-              <Link to="/mails" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <AttachEmailOutlinedIcon fontSize="small" />
                   <span>メール一覧</span>
                 </Stack>
-              </Link>
             }
             sx={tabSx}
           />
           <Tab
             value="/staffs"
             label={
-              <Link to="/staffs" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <PermIdentityOutlinedIcon fontSize="small" />
                   <span>人材情報</span>
                 </Stack>
-              </Link>
             }
             sx={tabSx}
           />
           <Tab
             value="/projects"
             label={
-              <Link to="/projects" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <DescriptionOutlinedIcon fontSize="small" />
                   <span>案件情報</span>
                 </Stack>
-              </Link>
             }
             sx={tabSx}
           />

@@ -50,7 +50,16 @@ const MailListTable = () => {
         { id: 8, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
         { id: 9, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
         { id: 10, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 11, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' }
+        { id: 11, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 12, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 13, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 14, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 15, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 16, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 17, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 18, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 19, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+        { id: 20, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' }
         // ... 其他邮件数据
     ];
     // 在组件中添加状态
@@ -354,7 +363,15 @@ const MailListTable = () => {
                     </Box>
                 </Box>
             </Box>
-            <TableContainer component={Paper} elevation={1} sx={{ maxHeight: 600 }}>
+            <TableContainer
+                component={Paper}
+                elevation={1}
+                sx={{
+                    maxHeight: 600,
+                    overflow: 'auto',  // 添加滚动条
+                    position: 'relative' // 确保固定表头
+                }}
+            >
                 <Table stickyHeader sx={{ minWidth: 800 }}>
                     <TableHead sx={{
                         backgroundColor: '#f5f5f5',
@@ -365,7 +382,10 @@ const MailListTable = () => {
                             whiteSpace: 'nowrap',
                             fontSize: '0.8rem',
                             py: 1,
-                            lineHeight: '1.5'
+                            lineHeight: '1.5',
+                            position: 'sticky',  // 固定表头
+                            top: 0,              // 固定在顶部
+                            zIndex: 1            // 确保表头在内容之上
                         }
                     }}>
                         <TableRow>
