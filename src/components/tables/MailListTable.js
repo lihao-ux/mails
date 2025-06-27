@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect} from 'react';
 import {
     TableContainer,
     Table,
@@ -14,6 +14,7 @@ import {
     Checkbox,
     TextField, InputAdornment, FormControlLabel, TablePagination
 } from '@mui/material';
+import api from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -32,36 +33,47 @@ import {
     Warning,           // 警告 (黄色)
     Error
 } from '@mui/icons-material';
+
 const MailListTable = () => {
+    const [mails, setMails] = useState([]); // 用于存储 API 返回值
+    useEffect(() => {
+        api.getEmails()
+            .then(response => {
+                setMails(response.data); // 将返回的邮件数据设置到 mails 数组中
+            })
+            .catch(error => {
+                console.error('メール取得エラー:', error);
+            });
+    }, []);
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const [warnOpen, setWarnOpen] = useState(false);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    const mails = [
-        { id: 1, status: '1', category: '人材情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 2, status: '2', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 3, status: '3', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 4, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 5, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 6, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 7, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 8, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 9, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 10, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 11, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 12, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 13, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 14, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 15, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 16, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 17, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 18, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 19, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-        { id: 20, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' }
-        // ... 其他邮件数据
-    ];
+    // const mails = [
+    //     { id: 1, status: '1', category: '人材情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 2, status: '2', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 3, status: '3', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 4, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 5, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 6, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 7, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 8, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 9, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 10, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 11, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 12, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 13, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 14, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 15, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 16, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 17, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 18, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 19, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
+    //     { id: 20, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' }
+    //     // ... 其他邮件数据
+    // ];
     // 在组件中添加状态
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -424,19 +436,19 @@ const MailListTable = () => {
                                         />
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                        {renderStatusIcon(mail.status)}
+                                        {renderStatusIcon(mail.ステータス)}
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                        {mail.category}
+                                        {mail.種別}
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                        {mail.date}
+                                        {mail.受信時刻}
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', color: '#1976d2', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                        {mail.sender}
+                                        {mail.送信者}
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                        {mail.subject}
+                                        {mail.MSGID}
                                     </TableCell>
                                 </TableRow>
                             );
