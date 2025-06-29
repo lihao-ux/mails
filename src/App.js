@@ -28,7 +28,7 @@ function App() {
           />
           {/* 添加邮件详情页路由 */}
           <Route
-            path="mails/:mailId"
+            path="mails/:msgid"
             element={
               <Box >
                 <Box>

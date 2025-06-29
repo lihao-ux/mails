@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     TextField,
     TableContainer,
@@ -23,6 +23,7 @@ import {
     Warning,           // 警告 (黄色)
     Error
 } from '@mui/icons-material';
+import api from "../../api/api";
 
 const ProjectTable = () => {
     const [locationValues, setLocationValues] = React.useState({});
@@ -44,162 +45,37 @@ const ProjectTable = () => {
 
         setSelected(newSelected);
     };
-    const [staffs, setStaffs] = useState([
-        {
-            id: 1,
-            staffName: "山田太郎",
-            status: "1",
-            staffAge: 32,
-            skills: "Java, Spring Boot, PostgreSQL, AWS",
-            workDate: "月～金 9:00-18:00",
-            desiredSalary: "80万円",
-            aiRecommendedProjects: "金融システム開発 (Java/Spring), クラウド移行プロジェクト"
-        },
-        {
-            id: 2,
-            staffName: "佐藤花子",
-            status: "2",
-            staffAge: 28,
-            skills: "React, TypeScript, Node.js",
-            workDate: "月～水 フルタイム",
-            desiredSalary: "70万円",
-            aiRecommendedProjects: "フロントエンド刷新プロジェクト, 社内ポータル開発"
-        },
-        {
-            id: 3,
-            staffName: "鈴木健太",
-            status: "3",
-            staffAge: 35,
-            skills: "Python, Django, 機械学習",
-            workDate: "リモート可 フレックス",
-            desiredSalary: "90万円",
-            aiRecommendedProjects: "AIチャットボット開発, データ分析基盤構築"
-        },
-        {
-            id: 4,
-            staffName: "田中優子",
-            status: "1",
-            staffAge: 40,
-            skills: "C#, .NET Core, Azure",
-            workDate: "月～金 8:00-17:00",
-            desiredSalary: "85万円",
-            aiRecommendedProjects: "製造業向けERPシステム開発"
-        },
-        {
-            id: 5,
-            staffName: "伊藤一郎",
-            status: "2",
-            staffAge: 45,
-            skills: "COBOL, メインフレーム",
-            workDate: "週3日 要相談",
-            desiredSalary: "75万円",
-            aiRecommendedProjects: "レガシーシステム保守・改修"
-        },
-        {
-            id: 6,
-            staffName: "高橋美咲",
-            status: "1",
-            staffAge: 29,
-            skills: "Vue.js, Firebase",
-            workDate: "フルリモート可",
-            desiredSalary: "65万円",
-            aiRecommendedProjects: "スタートアップ向けWebアプリ開発"
-        },
-        {
-            id: 7,
-            staffName: "渡辺隆",
-            status: "3",
-            staffAge: 38,
-            skills: "Go, Kubernetes, Docker",
-            workDate: "月～木 フルタイム",
-            desiredSalary: "95万円",
-            aiRecommendedProjects: "マイクロサービスアーキテクチャ構築"
-        },
-        {
-            id: 8,
-            staffName: "中村真理子",
-            status: "2",
-            staffAge: 31,
-            skills: "PHP, Laravel, MySQL",
-            workDate: "週4日 要相談",
-            desiredSalary: "68万円",
-            aiRecommendedProjects: "ECサイトリニューアルプロジェクト"
-        },
-        {
-            id: 9,
-            staffName: "小林健二",
-            status: "1",
-            staffAge: 42,
-            skills: "Ruby on Rails, JavaScript",
-            workDate: "月～金 10:00-19:00",
-            desiredSalary: "82万円",
-            aiRecommendedProjects: "SNSアプリケーション開発"
-        },
-        {
-            id: 10,
-            staffName: "加藤愛",
-            status: "2",
-            staffAge: 27,
-            skills: "Swift, iOS開発",
-            workDate: "フレックス制",
-            desiredSalary: "72万円",
-            aiRecommendedProjects: "モバイルアプリ新規開発"
-        },
-        {
-            id: 11,
-            staffName: "吉田翔",
-            status: "1",
-            staffAge: 33,
-            skills: "Scala, Akka, 分散システム",
-            workDate: "リモート優先",
-            desiredSalary: "88万円",
-            aiRecommendedProjects: "高トラフィック対応システム開発"
-        },
-        {
-            id: 12,
-            staffName: "山本裕子",
-            status: "3",
-            staffAge: 36,
-            skills: "Angular, RxJS, NgRx",
-            workDate: "月～金 9:30-18:30",
-            desiredSalary: "78万円",
-            aiRecommendedProjects: "大規模フロントエンドプロジェクト"
-        },
-        {
-            id: 13,
-            staffName: "斎藤大輔",
-            status: "1",
-            staffAge: 39,
-            skills: "DevOps, CI/CD, Terraform",
-            workDate: "フルタイム 要相談",
-            desiredSalary: "92万円",
-            aiRecommendedProjects: "インフラ自動化プロジェクト"
-        },
-        {
-            id: 14,
-            staffName: "福田さくら",
-            status: "2",
-            staffAge: 30,
-            skills: "UI/UXデザイン, Figma",
-            workDate: "週3日～",
-            desiredSalary: "75万円",
-            aiRecommendedProjects: "デザインシステム構築"
-        },
-        {
-            id: 15,
-            staffName: "清水剛",
-            status: "1",
-            staffAge: 37,
-            skills: "Blockchain, Solidity",
-            workDate: "フルリモート",
-            desiredSalary: "100万円",
-            aiRecommendedProjects: "DeFiプロジェクト開発"
-        }
-    ]);
+    const [projects, setProjects] = useState([]);
+    useEffect(() => {
+        api.getProjects()
+            .then(response => {
+                setProjects(response.data); // 将返回的邮件数据设置到 mails 数组中
+            })
+            .catch(error => {
+                console.error('案件情報取得エラー:', error);
+            });
+    }, []);
+
+    const findByConditions= () => {
+        const params = {
+            status:1,
+            name_or_skill: searchQuery
+        };
+        console.log(selectedValues,params)
+        api.searchProjects(params)
+            .then(response => {
+                console.log(response.data)
+                setProjects(response.data);
+            })
+            .catch(error => {
+                console.error('案件情報取得エラー:', error);
+            });
+    };
+
     // 全选/取消全选
     const handleSelectAll = (event) => {
         if (event.target.checked) {
-            const newSelecteds = staffs.map((staff) => staff.id);
+            const newSelecteds = projects.map((project) => project.id);
             setSelected(newSelecteds);
             return;
         }
@@ -220,7 +96,7 @@ const ProjectTable = () => {
     // 在组件中添加状态
     const [page, setPage] = useState(0);
     // 计算当前页数据
-    const paginatedStaffs = staffs.slice(
+    const paginatedProjects = projects.slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
     );
@@ -238,18 +114,16 @@ const ProjectTable = () => {
         return <Typography variant="body2" sx={{fontSize: '0.75rem'}}>{status}</Typography>;
     };
     const [statusValues, setStatusValues] = React.useState(
-        staffs.reduce((acc, staff) => ({...acc, [staff.id]: staff.status}), {})
+        projects.reduce((acc, staff) => ({...acc, [staff.id]: staff.status}), {})
     );
     const handleLocationChange = (id, value) => {
         setLocationValues(prev => ({
             ...prev,
             [id]: value === "" ? "" : value, // 允许清空
         }));
-        console.log(paginatedStaffs)
     };
     const handleStatusChange = (staffId, newStatus) => {
         setStatusValues((prev) => ({...prev, [staffId]: newStatus}));
-        console.log(staffs)
     };
     const handleChange = (value) => {
         setSelectedValues((prev) =>
@@ -304,9 +178,7 @@ const ProjectTable = () => {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                onClick={() => {
-                                    console.log(selectedValues);
-                                }}
+                                onClick={() =>findByConditions()}
                                 sx={{
                                     height: '40px',
                                     borderTopLeftRadius: 0,
@@ -465,8 +337,8 @@ const ProjectTable = () => {
                             <TableCell padding="checkbox">
                                 <Checkbox
                                     color="primary"
-                                    indeterminate={selected.length > 0 && selected.length < staffs.length}
-                                    checked={staffs.length > 0 && selected.length === staffs.length}
+                                    indeterminate={selected.length > 0 && selected.length < projects.length}
+                                    checked={projects.length > 0 && selected.length === projects.length}
                                     onChange={handleSelectAll}
                                 />
                             </TableCell>
@@ -535,20 +407,20 @@ const ProjectTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {paginatedStaffs.map((staff) => {
-                            const isItemSelected = isSelected(staff.id);
+                        {paginatedProjects.map((project) => {
+                            const isItemSelected = isSelected(project.id);
                             return (
-                                <TableRow key={staff.id}
+                                <TableRow key={project.id}
                                           hover
                                           sx={{cursor: 'pointer', height: '48px'}}
-                                          onClick={(event) => handleCheckboxClick(event, staff.id)}
+                                          onClick={(event) => handleCheckboxClick(event, project.id)}
                                           role="checkbox"
                                           aria-checked={isItemSelected}
                                           selected={isItemSelected}>
                                     <TableCell padding="checkbox">
                                         <Checkbox
                                             checked={isItemSelected}
-                                            onChange={(event) => handleCheckboxClick(event, staff.id)}
+                                            onChange={(event) => handleCheckboxClick(event, project.id)}
                                         />
                                     </TableCell>
                                     <TableCell sx={{
@@ -558,7 +430,7 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {staff.staffName}
+                                        {project.案件名}
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
@@ -568,18 +440,18 @@ const ProjectTable = () => {
                                         lineHeight: '1.5'
                                     }}>
                                         <Select
-                                            value={staff.status} // 直接绑定到原数据
+                                            value={project.ステータス}
                                             onChange={(e) => {
                                                 // 更新原数组
-                                                const updatedStaffs = staffs.map(item =>
-                                                    item.id === staff.id
-                                                        ? {...item, status: e.target.value}
+                                                const updatedProjects = projects.map(item =>
+                                                    item.id === project.id
+                                                        ? {...item, ステータス: e.target.value}
                                                         : item
                                                 );
-                                                setStaffs(updatedStaffs);
+                                                setProjects(updatedProjects);
                                             }}
                                             sx={(theme) => {
-                                                const style = getSelectStyle(staff.status, theme); // 直接使用 staff.status
+                                                const style = getSelectStyle(project.ステータス, theme);
                                                 return {
                                                     height: '32px',
                                                     fontSize: '12px',
@@ -594,8 +466,8 @@ const ProjectTable = () => {
                                             }}
                                         >
                                             <MenuItem value="1">募集中</MenuItem>
-                                            <MenuItem value="2">終 了</MenuItem>
-                                            <MenuItem value="3">保留中</MenuItem>
+                                            <MenuItem value="0">終 了</MenuItem>
+                                            <MenuItem value="2">提案済</MenuItem>
                                         </Select>
                                     </TableCell>
                                     <TableCell sx={{
@@ -605,17 +477,16 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {/*{staff.staffAge}*/}
                                         <TextField
-                                            value={staff.staffAge} // 直接绑定到原数据
+                                            value={project.作業場所} // 直接绑定到原数据
                                             onChange={(e) => {
                                                 // 更新原数组
-                                                const updatedStaffs = staffs.map(item =>
-                                                    item.id === staff.id
-                                                        ? {...item, staffAge: e.target.value}
+                                                const updatedProjects = project.map(item =>
+                                                    item.id === project.id
+                                                        ? {...item, 作業場所: e.target.value}
                                                         : item
                                                 );
-                                                setStaffs(updatedStaffs); // 触发重新渲染
+                                                setProjects(updatedProjects); // 触发重新渲染
                                             }}
                                             variant="outlined"
                                             size="small"
@@ -630,7 +501,21 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {staff.skills}
+                                        <TextField
+                                            value={project.必要なスキル} // 直接绑定到原数据
+                                            onChange={(e) => {
+                                                // 更新原数组
+                                                const updatedProjects = projects.map(item =>
+                                                    item.id === project.id
+                                                        ? {...item, 必要なスキル: e.target.value}
+                                                        : item
+                                                );
+                                                setProjects(updatedProjects); // 触发重新渲染
+                                            }}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                        />
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
@@ -639,7 +524,7 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {staff.workDate}
+                                        {project.単価}
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
@@ -648,7 +533,7 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {staff.desiredSalary}
+                                        {project.期間}
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
@@ -657,7 +542,7 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {staff.aiRecommendedProjects}
+                                        {project?.推薦案件ID1}
                                     </TableCell>
                                 </TableRow>
                             );
@@ -672,7 +557,7 @@ const ProjectTable = () => {
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 50]}
                     component="div"
-                    count={staffs.length}
+                    count={projects.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}

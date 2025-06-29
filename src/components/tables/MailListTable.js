@@ -51,29 +51,6 @@ const MailListTable = () => {
     const [warnOpen, setWarnOpen] = useState(false);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    // const mails = [
-    //     { id: 1, status: '1', category: '人材情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 2, status: '2', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 3, status: '3', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 4, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 5, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 6, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 7, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 8, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 9, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 10, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 11, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 12, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 13, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 14, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 15, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 16, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 17, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 18, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 19, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' },
-    //     { id: 20, status: '1', category: '条件情報', date: '2025/03/08 19:40', sender: 'yamada@company.co.jp', subject: '契約書の締結について' }
-    //     // ... 其他邮件数据
-    // ];
     // 在组件中添加状态
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -96,7 +73,7 @@ const MailListTable = () => {
     // 全选/取消全选
     const handleSelectAll = (event) => {
         if (event.target.checked) {
-            const newSelecteds = mails.map((mail) => mail.id);
+            const newSelecteds = mails.map((mail) => mail.MSGID);
             setSelected(newSelecteds);
             return;
         }
@@ -106,8 +83,10 @@ const MailListTable = () => {
         if (selected.length > 1 || selected.length === 0) {
             setWarnOpen(true)
         } else {
-            const firstSelectedId = selected[0];
-            navigate(`/mails/${firstSelectedId}`); // 跳转到详情页
+            const msgid = selected[0];
+            // mail?.
+            console.log(msgid)
+            navigate(`/mails/${msgid}`); // 跳转到详情页
         }
     };
     const handleCheckboxClick = (event, id) => {
@@ -418,13 +397,13 @@ const MailListTable = () => {
                     </TableHead>
                     <TableBody>
                         {paginatedMails.map((mail) => {
-                            const isItemSelected = isSelected(mail.id);
+                            const isItemSelected = isSelected(mail.MSGID);
                             return (
                                 <TableRow
-                                    key={mail.id}
+                                    key={mail.MSGID}
                                     hover
                                     sx={{ cursor: 'pointer', height: '48px' }}
-                                    onClick={(event) => handleCheckboxClick(event, mail.id)}
+                                    onClick={(event) => handleCheckboxClick(event, mail.MSGID)}
                                     role="checkbox"
                                     aria-checked={isItemSelected}
                                     selected={isItemSelected}
@@ -432,7 +411,7 @@ const MailListTable = () => {
                                     <TableCell padding="checkbox">
                                         <Checkbox
                                             checked={isItemSelected}
-                                            onChange={(event) => handleCheckboxClick(event, mail.id)}
+                                            onChange={(event) => handleCheckboxClick(event, mail.MSGID)}
                                         />
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>

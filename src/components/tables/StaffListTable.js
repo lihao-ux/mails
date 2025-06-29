@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     TableContainer,
     Table,
@@ -18,165 +18,24 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import {
-    CheckCircle,       // 通过 (绿色)
-    Warning,           // 警告 (黄色)
+    CheckCircle,
+    Warning,
     Error
 } from '@mui/icons-material';
+import api from "../../api/api";
 const StaffListTable = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedValues, setSelectedValues] = useState('');
-    const staffs = [
-        {
-            id: 1,
-            staffName: "山田太郎",
-            status: "1",
-            staffAge: 32,
-            skills: "Java, Spring Boot, PostgreSQL, AWS",
-            workDate: "月～金 9:00-18:00",
-            desiredSalary: "80万円",
-            aiRecommendedProjects: "金融システム開発 (Java/Spring), クラウド移行プロジェクト"
-        },
-        {
-            id: 2,
-            staffName: "佐藤花子",
-            status: "2",
-            staffAge: 28,
-            skills: "React, TypeScript, Node.js",
-            workDate: "月～水 フルタイム",
-            desiredSalary: "70万円",
-            aiRecommendedProjects: "フロントエンド刷新プロジェクト, 社内ポータル開発"
-        },
-        {
-            id: 3,
-            staffName: "鈴木健太",
-            status: "3",
-            staffAge: 35,
-            skills: "Python, Django, 機械学習",
-            workDate: "リモート可 フレックス",
-            desiredSalary: "90万円",
-            aiRecommendedProjects: "AIチャットボット開発, データ分析基盤構築"
-        },
-        {
-            id: 4,
-            staffName: "田中優子",
-            status: "1",
-            staffAge: 40,
-            skills: "C#, .NET Core, Azure",
-            workDate: "月～金 8:00-17:00",
-            desiredSalary: "85万円",
-            aiRecommendedProjects: "製造業向けERPシステム開発"
-        },
-        {
-            id: 5,
-            staffName: "伊藤一郎",
-            status: "2",
-            staffAge: 45,
-            skills: "COBOL, メインフレーム",
-            workDate: "週3日 要相談",
-            desiredSalary: "75万円",
-            aiRecommendedProjects: "レガシーシステム保守・改修"
-        },
-        {
-            id: 6,
-            staffName: "高橋美咲",
-            status: "1",
-            staffAge: 29,
-            skills: "Vue.js, Firebase",
-            workDate: "フルリモート可",
-            desiredSalary: "65万円",
-            aiRecommendedProjects: "スタートアップ向けWebアプリ開発"
-        },
-        {
-            id: 7,
-            staffName: "渡辺隆",
-            status: "3",
-            staffAge: 38,
-            skills: "Go, Kubernetes, Docker",
-            workDate: "月～木 フルタイム",
-            desiredSalary: "95万円",
-            aiRecommendedProjects: "マイクロサービスアーキテクチャ構築"
-        },
-        {
-            id: 8,
-            staffName: "中村真理子",
-            status: "2",
-            staffAge: 31,
-            skills: "PHP, Laravel, MySQL",
-            workDate: "週4日 要相談",
-            desiredSalary: "68万円",
-            aiRecommendedProjects: "ECサイトリニューアルプロジェクト"
-        },
-        {
-            id: 9,
-            staffName: "小林健二",
-            status: "1",
-            staffAge: 42,
-            skills: "Ruby on Rails, JavaScript",
-            workDate: "月～金 10:00-19:00",
-            desiredSalary: "82万円",
-            aiRecommendedProjects: "SNSアプリケーション開発"
-        },
-        {
-            id: 10,
-            staffName: "加藤愛",
-            status: "2",
-            staffAge: 27,
-            skills: "Swift, iOS開発",
-            workDate: "フレックス制",
-            desiredSalary: "72万円",
-            aiRecommendedProjects: "モバイルアプリ新規開発"
-        },
-        {
-            id: 11,
-            staffName: "吉田翔",
-            status: "1",
-            staffAge: 33,
-            skills: "Scala, Akka, 分散システム",
-            workDate: "リモート優先",
-            desiredSalary: "88万円",
-            aiRecommendedProjects: "高トラフィック対応システム開発"
-        },
-        {
-            id: 12,
-            staffName: "山本裕子",
-            status: "3",
-            staffAge: 36,
-            skills: "Angular, RxJS, NgRx",
-            workDate: "月～金 9:30-18:30",
-            desiredSalary: "78万円",
-            aiRecommendedProjects: "大規模フロントエンドプロジェクト"
-        },
-        {
-            id: 13,
-            staffName: "斎藤大輔",
-            status: "1",
-            staffAge: 39,
-            skills: "DevOps, CI/CD, Terraform",
-            workDate: "フルタイム 要相談",
-            desiredSalary: "92万円",
-            aiRecommendedProjects: "インフラ自動化プロジェクト"
-        },
-        {
-            id: 14,
-            staffName: "福田さくら",
-            status: "2",
-            staffAge: 30,
-            skills: "UI/UXデザイン, Figma",
-            workDate: "週3日～",
-            desiredSalary: "75万円",
-            aiRecommendedProjects: "デザインシステム構築"
-        },
-        {
-            id: 15,
-            staffName: "清水剛",
-            status: "1",
-            staffAge: 37,
-            skills: "Blockchain, Solidity",
-            workDate: "フルリモート",
-            desiredSalary: "100万円",
-            aiRecommendedProjects: "DeFiプロジェクト開発"
-        }
-    ];
+    useEffect(() => {
+        api.getEngineers()
+            .then(response => {
+                setStaffs(response.data); // 将返回的邮件数据设置到 mails 数组中
+            })
+            .catch(error => {
+                console.error('メール取得エラー:', error);
+            });
+    }, []);
+    const [staffs, setStaffs] = useState([])
     const handleChange = (value) => {
         setSelectedValues((prev) =>
             prev.includes(value)
@@ -437,14 +296,14 @@ const StaffListTable = () => {
                         {paginatedStaffs.map((staff) => (
                             <TableRow key={staff.id} hover sx={{ cursor: 'pointer', height: '48px' }}>
                                 <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.staffName}
+                                    {staff.氏名}
                                 </TableCell>
                                 <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
                                     <Select
-                                        value={statusValues[staff.id] || staff.status}
+                                        value={statusValues[staff.id] || staff.ステータス}
                                         onChange={(e) => handleStatusChange(staff.id, e.target.value)}
                                         sx={(theme) => {
-                                            const value = statusValues[staff.id] || staff.status;
+                                            const value = statusValues[staff.id] || staff.ステータス;
                                             const style = getSelectStyle(value, theme);
                                             return {
                                                 height: '32px',
@@ -464,20 +323,61 @@ const StaffListTable = () => {
                                         <MenuItem value="3">調整中</MenuItem>
                                     </Select>
                                 </TableCell>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.staffAge}
+                                <TableCell sx={{
+                                    border: '1px solid #ddd',
+                                    whiteSpace: 'nowrap',
+                                    fontSize: '0.8rem',
+                                    py: 1,
+                                    lineHeight: '1.5'
+                                }}>
+                                    {/*{staff.staffAge}*/}
+                                    <TextField
+                                        value={staff.年齢} // 直接绑定到原数据
+                                        onChange={(e) => {
+                                            // 更新原数组
+                                            const updatedStaffs = staffs.map(item =>
+                                                item.id === staff.id
+                                                    ? {...item, 年齢: e.target.value}
+                                                    : item
+                                            );
+                                            setStaffs(updatedStaffs); // 触发重新渲染
+                                        }}
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                    />
                                 </TableCell>
-                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', color: '#1976d2', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.skills}
+                                <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', color: '#1976d2', py: 1, lineHeight: '1.5' }}>
+                                    <TextField
+                                        value={staff.スキル} // 直接绑定到原数据
+                                        onChange={(e) => {
+                                            // 更新原数组
+                                            const updatedStaffs = staffs.map(item =>
+                                                item.id === staff.id
+                                                    ? {...item, スキル: e.target.value}
+                                                    : item
+                                            );
+                                            setStaffs(updatedStaffs); // 触发重新渲染
+                                        }}
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        InputProps={{
+                                            sx: {
+                                                fontSize: '0.75rem', // 更小的字体
+                                                padding: '6px 8px',  // 可选，控制内部 padding
+                                            },
+                                        }}
+                                    />
                                 </TableCell>
                                 <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.workDate}
+                                    {staff.稼働開始可能日}
                                 </TableCell>
                                 <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.desiredSalary}
+                                    {staff.単価}
                                 </TableCell>
                                 <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                    {staff.aiRecommendedProjects}
+                                    {staff.推薦案件ID1}
                                 </TableCell>
                             </TableRow>
                         ))}

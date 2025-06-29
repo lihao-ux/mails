@@ -11,10 +11,11 @@ const apiService = {
 
     // ======= 案件相关 =======
     saveProject: (data) => api.post('/projects', data),
-    getProjects: (params = {}) => api.get('/projects', { params }),
+    getProjects: (params = {}) => api.get('/cases', { params }),
     getProjectsByMsgid: (msgid) => api.get(`/projects/by-msgid/${msgid}`),
     updateProjectRecommendations: (projectId, engineerIds) =>
         api.put(`/projects/${projectId}/recommendations`, { recommended_engineers: engineerIds }),
+    searchProjects:(params = {}) => api.get('/projects/search', { params }),
 
     // ======= 工程师相关 =======
     saveEngineer: (data) => api.post('/engineers', data),

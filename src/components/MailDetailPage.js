@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Link} from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Link,useParams} from 'react-router-dom';
 import {
     Box,
     Paper,
@@ -28,32 +28,33 @@ import {
     Warning,           // 警告 (黄色)
     Error
 } from '@mui/icons-material';
+import api from "../api/api";
 
 const MailDetailPage = () => {
     const [tabValue, setTabValue] = useState(1); // 默认显示人材情報管理标签
-    const [status, setStatus] = useState('1');
-    const [personnel, setPersonnel] = useState([
-        {id: 1, name: '', age: '', skill: '', availableTime: '', hourlyRate: '¥8500', details: ''},
-        {id: 2, name: '', age: '', skill: '', availableTime: '', hourlyRate: '¥8500', details: ''},
-        {id: 3, name: '', age: '', skill: '', availableTime: '', hourlyRate: '¥8500', details: ''}
-    ]);
-    const mail =
-        {
-            id: 1,
-            status: '1',
-            category: '人材情報',
-            date: '2025/03/08 20:40',
-            sender: 'yamada@company.co.jp',
-            subject: '契約書の締結について',
-            html: '<div dir="ltr"><br><div class="gmail_quote gmail_quote_container"><div dir="ltr"><span style="font-size:large;font-weight:bold">Forwarded Conversation</span><br><span style="font-weight:bold">Subject: 李寧さんの交代要員について</span><br>------------------------<br></div><br><div dir="ltr" class="gmail_attr" style="color:#888">发件人： <strong class="gmail_sendername" dir="auto">錦沢 直樹（NISHIKIZAWA Naoki）</strong> <span dir="auto">&lt;nnishiki@crossfusion.co.jp&gt;</span><br>Date: 2025年3月3日周一 12:56<br>To: CHIHARU KURODA &lt;&gt;<br>Cc:  &lt;&gt;, 李 正遠 (LI Zhengyuan) &lt;&gt;, 魏 巍 (WEI Wei) &lt;&gt;<br></div><br><br>',
-            link: '李昊履历书.xls'
-        }
+    const [mail, setMail] = useState({}); // 用于存储 API 返回值
+    const [relatedStaffs, setRelatedStaffs] = useState([]); // 用于存储 API 返回值
+    const { msgid } = useParams();
+    useEffect(() => {
+        api.getMessageWithAttachments(msgid)
+            .then(response => {
+                setMail(response.data); // 将返回的邮件数据设置到 mails 数组中
+            })
+            .catch(error => {
+                console.error('メール取得エラー:', error);
+            });
+    }, []);
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
     };
 
     const handleStatusChange = (event) => {
-        setStatus(event.target.value);
+        console.log(event.target.value)
+        setMail({
+            ...mail,
+            ステータス: event.target.value
+        });
+        console.log("test",mail.ステータス)
     };
     const HtmlInput = ({html, ...props}) => {
         return (
@@ -70,9 +71,9 @@ const MailDetailPage = () => {
         );
     };
     const addPersonnelRow = () => {
-        if (personnel.length > 0) {
-            const newId = Math.max(...personnel.map(p => p.id)) + 1;
-            setPersonnel([...personnel, {
+        if (relatedStaffs.length > 0) {
+            const newId = Math.max(...relatedStaffs.map(p => p.id)) + 1;
+            setRelatedStaffs([...relatedStaffs, {
                 id: newId,
                 name: '',
                 age: '',
@@ -82,7 +83,7 @@ const MailDetailPage = () => {
                 details: ''
             }]);
         } else {
-            setPersonnel([...personnel, {
+            setRelatedStaffs([...relatedStaffs, {
                 id: 1,
                 name: '',
                 age: '',
@@ -92,19 +93,16 @@ const MailDetailPage = () => {
                 details: ''
             }]);
         }
-
-        console.log(personnel)
     };
 
     const deletePersonnelRow = (id) => {
-        setPersonnel(personnel.filter(p => p.id !== id));
+        setRelatedStaffs(relatedStaffs.filter(p => p.id !== id));
     };
 
     const handlePersonnelChange = (id, field, value) => {
-        setPersonnel(personnel.map(p =>
+        setRelatedStaffs(relatedStaffs.map(p =>
             p.id === id ? {...p, [field]: value} : p
         ));
-        console.log(personnel);
     };
 
     const TabPanel = ({children, value, index, ...other}) => (
@@ -155,7 +153,7 @@ const MailDetailPage = () => {
                         </Typography>
                         <TextField
                             fullWidth
-                            value={mail.date}
+                            value={mail.受信時刻}
                             variant="outlined"
                             size="small"
                             InputProps={{readOnly: true}}
@@ -169,7 +167,7 @@ const MailDetailPage = () => {
                         </Typography>
                         <TextField
                             fullWidth
-                            value={mail.sender}
+                            value={mail.送信者}
                             variant="outlined"
                             size="small"
                             InputProps={{readOnly: true}}
@@ -183,7 +181,7 @@ const MailDetailPage = () => {
                         </Typography>
                         <TextField
                             fullWidth
-                            value={mail.subject}
+                            value={mail.タイトル}
                             variant="outlined"
                             size="small"
                             InputProps={{readOnly: true}}
@@ -204,7 +202,7 @@ const MailDetailPage = () => {
                             InputProps={{
                                 readOnly: true,
                                 inputComponent: HtmlInput, // 替换默认 input 组件
-                                inputProps: {html: mail.html}, // 传递HTML内容
+                                inputProps: {html: mail.本文_HTML}, // 传递HTML内容
                             }}
                             sx={{
                                 bgcolor: '#f9f9f9',
@@ -222,14 +220,16 @@ const MailDetailPage = () => {
                         </Typography>
                         <FormControl size="small" sx={{minWidth: 150}}>
                             <Select
-                                value={status}
+                                value={mail.ステータス}
                                 onChange={handleStatusChange}
                             >
-                                <MenuItem value="1"><CheckCircle sx={{fontSize: '14px'}}
+                                <MenuItem value="7"><CheckCircle sx={{fontSize: '14px'}}
+                                                                 color="success"/>確認要</MenuItem>
+                                <MenuItem value="0"><CheckCircle sx={{fontSize: '14px'}}
                                                                  color="success"/> 解約成功</MenuItem>
-                                <MenuItem value="２"><Warning sx={{fontSize: '14px'}}
+                                <MenuItem value="1"><Warning sx={{fontSize: '14px'}}
                                                              color="warning"/> 解約失敗</MenuItem>
-                                <MenuItem value="３"><Error sx={{fontSize: '14px'}} color="error"/> 解約対象</MenuItem>
+                                <MenuItem value="9"><Error sx={{fontSize: '14px'}} color="error"/> 解約対象</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
@@ -298,14 +298,14 @@ const MailDetailPage = () => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {personnel.map((person) => (
-                                            <TableRow key={person.id}>
+                                        {relatedStaffs.map((relatedStaff) => (
+                                            <TableRow key={relatedStaff.id}>
                                                 <TableCell>
                                                     <TextField
                                                         size="small"
                                                         placeholder="名前を..."
-                                                        value={person.name}
-                                                        onChange={(e) => handlePersonnelChange(person.id, 'name', e.target.value)}
+                                                        value={relatedStaff.name}
+                                                        onChange={(e) => handlePersonnelChange(relatedStaff.id, 'name', e.target.value)}
                                                         sx={{minWidth: 100}}
                                                     />
                                                 </TableCell>
@@ -313,16 +313,16 @@ const MailDetailPage = () => {
                                                     <TextField
                                                         size="small"
                                                         placeholder="年..."
-                                                        value={person.age}
-                                                        onChange={(e) => handlePersonnelChange(person.id, 'age', e.target.value)}
+                                                        value={relatedStaff.age}
+                                                        onChange={(e) => handlePersonnelChange(relatedStaff.id, 'age', e.target.value)}
                                                         sx={{width: 60}}
                                                     />
                                                 </TableCell>
                                                 <TableCell>
                                                     <FormControl size="small" sx={{minWidth: 80}}>
                                                         <Select
-                                                            value={person.skill}
-                                                            onChange={(e) => handlePersonnelChange(person.id, 'skill', e.target.value)}
+                                                            value={relatedStaff.skill}
+                                                            onChange={(e) => handlePersonnelChange(relatedStaff.id, 'skill', e.target.value)}
                                                             displayEmpty
                                                         >
                                                             <MenuItem value="">スキル...</MenuItem>
@@ -335,8 +335,8 @@ const MailDetailPage = () => {
                                                 <TableCell>
                                                     <FormControl size="small" sx={{minWidth: 80}}>
                                                         <Select
-                                                            value={person.availableTime}
-                                                            onChange={(e) => handlePersonnelChange(person.id, 'availableTime', e.target.value)}
+                                                            value={relatedStaff.availableTime}
+                                                            onChange={(e) => handlePersonnelChange(relatedStaff.id, 'availableTime', e.target.value)}
                                                             displayEmpty
                                                         >
                                                             <MenuItem value="">Sele...</MenuItem>
@@ -348,8 +348,8 @@ const MailDetailPage = () => {
                                                 <TableCell>
                                                     <TextField
                                                         size="small"
-                                                        value={person.hourlyRate}
-                                                        onChange={(e) => handlePersonnelChange(person.id, 'hourlyRate', e.target.value)}
+                                                        value={relatedStaff.hourlyRate}
+                                                        onChange={(e) => handlePersonnelChange(relatedStaff.id, 'hourlyRate', e.target.value)}
                                                         sx={{width: 80}}
                                                     />
                                                 </TableCell>
@@ -357,15 +357,15 @@ const MailDetailPage = () => {
                                                     <TextField
                                                         size="small"
                                                         placeholder="詳細を入力"
-                                                        value={person.details}
-                                                        onChange={(e) => handlePersonnelChange(person.id, 'details', e.target.value)}
+                                                        value={relatedStaff.details}
+                                                        onChange={(e) => handlePersonnelChange(relatedStaff.id, 'details', e.target.value)}
                                                         sx={{minWidth: 100}}
                                                     />
                                                 </TableCell>
                                                 <TableCell>
                                                     <IconButton
                                                         size="small"
-                                                        onClick={() => deletePersonnelRow(person.id)}
+                                                        onClick={() => deletePersonnelRow(relatedStaff.id)}
                                                         sx={{color: '#f44336'}}
                                                     >
                                                         <DeleteIcon fontSize="small"/>
