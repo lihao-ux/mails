@@ -12,7 +12,7 @@ import {
     Typography,
     Box,
     Checkbox,
-    TextField, InputAdornment, FormControlLabel, TablePagination
+    TextField, InputAdornment, FormControlLabel, TablePagination, Select, MenuItem
 } from '@mui/material';
 import api from '../../api/api';
 import { useNavigate } from 'react-router-dom';
@@ -36,7 +36,27 @@ import {
 
 const MailListTable = () => {
     const [mails, setMails] = useState([]); // 用于存储 API 返回值
+    const [updateMails, setupdateMails] = useState([]);
+    const upsertItem = (newItem) => {
+        setupdateMails(prevItems => {
+            // 检查是否存在相同id的项目
+            const existingIndex = prevItems.findIndex(item => item.MSGID === newItem.MSGID);
+            if (existingIndex >= 0) {
+                // 存在则更新
+                const updatedItems = [...prevItems];
+                updatedItems[existingIndex] = newItem;
+                return updatedItems;
+            } else {
+                // 不存在则添加
+                return [...prevItems, newItem];
+            }
+        });
+    };
+
     useEffect(() => {
+        getEmails();
+    }, []);
+    const getEmails =() => {
         api.getEmails()
             .then(response => {
                 setMails(response.data); // 将返回的邮件数据设置到 mails 数组中
@@ -44,11 +64,12 @@ const MailListTable = () => {
             .catch(error => {
                 console.error('メール取得エラー:', error);
             });
-    }, []);
+    }
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const [warnOpen, setWarnOpen] = useState(false);
+    const [doUpdate, setDoUpdate] = useState(false);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     // 在组件中添加状态
@@ -85,7 +106,6 @@ const MailListTable = () => {
         } else {
             const msgid = selected[0];
             // mail?.
-            console.log(msgid)
             navigate(`/mails/${msgid}`); // 跳转到详情页
         }
     };
@@ -103,7 +123,23 @@ const MailListTable = () => {
 
         setSelected(newSelected);
     };
+    const doUpdateMails = () => {
+        if (updateMails.length === 0) {
+            setDoUpdate(true)
+        } else {
+            const newArray = updateMails.map(item => ({
+                msgid: item.MSGID,
+                status: item.ステータス
+            }));
+            api.updateMessagesStatusBatch(newArray).then(response => {
+                getEmails();
+            })
+                .catch(error => {
+                    console.error('メール取得エラー:', error);
+                });
+        }
 
+    };
     // 状态选项（显示汉字，值用英文）
     const [status, setStatus] = useState({
         unread: false,    // 未読
@@ -136,14 +172,49 @@ const MailListTable = () => {
             category: activeCategory
         });
     };
+    const styles = {
+        '0': { // 稼働中
+            bgcolor: '#d8edd9',  // 比 #e8f5e9 深一点的浅绿色
+            color: '#1b5e20',    // 比 #2e7d32 更深的绿色
+            iconColor: '#388e3c', // 中等深度的绿色
+            borderColor: '#81c784', // 边框色
+            fontWeight: 'bold'    // 加粗字体
+        },
+        '9': { // 待機中
+            bgcolor: '#d1e4f7',  // 浅蓝色背景 (类似浅绿的明度)
+            color: '#0d47a1',    // 深蓝色文字 (类似深绿的对比度)
+            iconColor: '#1976d2', // 图标蓝色
+            borderColor: '#64b5f6', // 边框色
+            fontWeight: 'bold'
+        },
+        '7': { // 調整中
+            bgcolor: '#ffecb3',  // 浅橙色背景 (类似浅绿的明度)
+            color: '#e65100',    // 深橙色文字 (类似深绿的对比度)
+            iconColor: '#ff9800', // 图标橙色
+            borderColor: '#ffb74d', // 边框色
+            fontWeight: 'bold'
+        },
+        '1': { // 緊急/警告 (新增红色样式)
+            bgcolor: '#ffebee',  // 非常浅的红色背景
+            color: '#c62828',    // 深红色文字
+            iconColor: '#d32f2f', // 图标红色
+            borderColor: '#ef9a9a', // 边框色
+            fontWeight: 'bold',
+            animation: 'blink 1.5s infinite' // 可选：添加闪烁动画效果
+        }
+    };
+    const getSelectStyle = (value, theme) => {
+        return styles[value] || styles['3']; // 默认使用調整中样式
+    };
     // 检查是否选中
     const isSelected = (id) => selected.indexOf(id) !== -1;
     const renderStatusIcon = (status) => {
         const iconStyle = { fontSize: '14px' }; // 调整图标大小
 
-        if (status === '1') return <><CheckCircle sx={iconStyle} color="success" /> 解約成功</>;
-        if (status === '2') return <><Warning sx={iconStyle} color="warning" /> 解約失敗</>;
-        if (status === '3') return <><Error sx={iconStyle} color="error" /> 解約対象</>;
+        if (status === '0') return <><CheckCircle sx={iconStyle} color="success" /> 解析OK</>;
+        if (status === '7') return <><Warning sx={iconStyle} color="warning" /> 確認要</>;
+        if (status === '1') return <><Error sx={iconStyle} color="error" /> 解析NG</>;
+        if (status === '9') return <><CheckCircle sx={iconStyle} color="success" /> 確認済</>;
         return <>{status}</>;
     };
     return (
@@ -415,7 +486,39 @@ const MailListTable = () => {
                                         />
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
-                                        {renderStatusIcon(mail.ステータス)}
+                                        <Select
+                                            value={mail.ステータス}  // 如果mail.ステータス为null或undefined，则使用"1"
+                                            onChange={(e) => {
+                                                // 更新原数组
+                                                const updatedProjects = mails.map(item =>
+                                                    item.MSGID === mail.MSGID
+                                                        ? {...item, ステータス: e.target.value}
+                                                        : item
+                                                );
+                                                upsertItem(mail);
+                                                setMails(updatedProjects);
+                                            }}
+                                            sx={(theme) => {
+                                                // const style = getSelectStyle(mail.ステータス ?? '1', theme);  // 同样处理这里的默认值
+                                                const style = getSelectStyle(mail.ステータス, theme);
+                                                return {
+                                                    height: '32px',
+                                                    fontSize: '12px',
+                                                    backgroundColor: style.bgcolor,
+                                                    color: style.color,
+                                                    '& .MuiSelect-icon': {color: style.iconColor},
+                                                    '&:hover': {
+                                                        backgroundColor: style.bgcolor,
+                                                        opacity: 0.9
+                                                    }
+                                                };
+                                            }}
+                                        >
+                                            <MenuItem value="1">解析NG</MenuItem>
+                                            <MenuItem value="0">解析OK</MenuItem>
+                                            <MenuItem value="9">確認済</MenuItem>
+                                            <MenuItem value="7">確認要</MenuItem>
+                                        </Select>
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
                                         {mail.種別}
@@ -483,6 +586,7 @@ const MailListTable = () => {
                         variant="contained"
                         color="warning"
                         sx={{ fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto' }}
+                        onClick={(event) => doUpdateMails()}
                     >
                         <EditDocumentIcon fontSize="small" sx={{ mr: 1 }} />
                         更新
@@ -496,6 +600,9 @@ const MailListTable = () => {
                             py: 0.5,
                             px: 1.5,
                             minWidth: 'auto'
+                        }}
+                        onClick={(event) => {
+                            console.log(updateMails)
                         }}
                         startIcon={<DeleteSweepIcon fontSize="small" />}  // ✅ 图标放在startIcon中
                     >
@@ -517,7 +624,26 @@ const MailListTable = () => {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={(event) => { setWarnOpen(false) }} autoFocus>
+                    <Button onClick={(event) => { setWarnOpen(false) }} autoFocus>setWarnOpen
+                        确认
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={doUpdate}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                    警告
+                </Alert>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        少なくとも1件のメール情報を更新してください。
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={(event) => { setDoUpdate(false) }} autoFocus>
                         确认
                     </Button>
                 </DialogActions>

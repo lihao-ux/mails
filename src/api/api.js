@@ -7,15 +7,14 @@ const apiService = {
     getEmails: (params = {}) => api.get('/messages', { params }),
     updateEmailStatus: (msgid, status) => api.put(`/messages/${msgid}/status`, { status }),
     getMessageWithAttachments: (msgid) => api.get(`/messages/${msgid}/attachments`),
-    updateMessageAttachments: (msgid, attachments) => api.put(`/messages/${msgid}/attachments`, { attachments }),
-
+    updateMessagesStatusBatch: (updates) => api.post('/messages/status/batch',{ updates: updates }),
     // ======= 案件相关 =======
     saveProject: (data) => api.post('/projects', data),
     getProjects: (params = {}) => api.get('/cases', { params }),
     getProjectsByMsgid: (msgid) => api.get(`/projects/by-msgid/${msgid}`),
     updateProjectRecommendations: (projectId, engineerIds) =>
         api.put(`/projects/${projectId}/recommendations`, { recommended_engineers: engineerIds }),
-    searchProjects:(params = {}) => api.get('/projects/search', { params }),
+    searchProjects:(params = {}) => api.post('/projects/search', { params }),
 
     // ======= 工程师相关 =======
     saveEngineer: (data) => api.post('/engineers', data),

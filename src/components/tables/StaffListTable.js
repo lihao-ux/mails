@@ -80,7 +80,7 @@ const StaffListTable = () => {
 
     const handleStatusChange = (staffId, newStatus) => {
         setStatusValues((prev) => ({ ...prev, [staffId]: newStatus }));
-        console.log(staffs)
+        console.log(statusValues)
     };
     
     const styles = {

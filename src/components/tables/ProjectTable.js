@@ -55,13 +55,12 @@ const ProjectTable = () => {
                 console.error('案件情報取得エラー:', error);
             });
     }, []);
-
     const findByConditions= () => {
         const params = {
-            status:1,
+            status:selectedValues,
             name_or_skill: searchQuery
         };
-        console.log(selectedValues,params)
+        console.log(selectedValues)
         api.searchProjects(params)
             .then(response => {
                 console.log(response.data)
@@ -84,8 +83,6 @@ const ProjectTable = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     // 分页处理函数
     const handleChangePage = (event, newPage) => {
-        console.log(newPage);
-
         setPage(newPage);
     };
 
@@ -131,7 +128,6 @@ const ProjectTable = () => {
                 ? prev.filter((v) => v !== value) // 如果已选中，则移除
                 : [...prev, value] // 如果未选中，则添加
         );
-        console.log(selectedValues);
     };
     const styles = {
         '1': { // 稼働中
@@ -148,7 +144,7 @@ const ProjectTable = () => {
             borderColor: '#64b5f6', // 边框色
             fontWeight: 'bold'
         },
-        '3': { // 調整中
+        '0': { // 調整中
             bgcolor: '#ffecb3',  // 浅橙色背景 (类似浅绿的明度)
             color: '#e65100',    // 深橙色文字 (类似深绿的对比度)
             iconColor: '#ff9800', // 图标橙色
@@ -247,20 +243,52 @@ const ProjectTable = () => {
                         }}
                     />
 
-                    {/* 待機中 (value="2") */}
+                    {/* 終了 (value="0") */}
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={selectedValues.includes("0")}
+                                onChange={() => handleChange("0")}
+                                value="0"
+                                sx={{
+                                    color: "inherit",
+                                    "&.Mui-checked": {color: styles["0"].iconColor},
+                                }}
+                            />
+                        }
+                        label="終　了"
+                        sx={{
+                            height: "30px",
+                            width: "95px",
+                            fontSize: "12px",
+                            padding: "0 8px",
+                            ...(selectedValues.includes("0") && {
+                                backgroundColor: styles["0"].bgcolor,
+                                color: styles["0"].color,
+                                border: `1px solid ${styles["0"].borderColor}`,
+                                borderRadius: "4px",
+                                "&:hover": {
+                                    backgroundColor: styles["0"].bgcolor,
+                                    opacity: 0.9,
+                                },
+                            }),
+                        }}
+                    />
+
+                    {/* 提案済 (value="2") */}
                     <FormControlLabel
                         control={
                             <Checkbox
                                 checked={selectedValues.includes("2")}
                                 onChange={() => handleChange("2")}
-                                value="2"
+                                value="3"
                                 sx={{
                                     color: "inherit",
                                     "&.Mui-checked": {color: styles["2"].iconColor},
                                 }}
                             />
                         }
-                        label="終了"
+                        label="提案済"
                         sx={{
                             height: "30px",
                             width: "95px",
@@ -273,38 +301,6 @@ const ProjectTable = () => {
                                 borderRadius: "4px",
                                 "&:hover": {
                                     backgroundColor: styles["2"].bgcolor,
-                                    opacity: 0.9,
-                                },
-                            }),
-                        }}
-                    />
-
-                    {/* 調整中 (value="3") */}
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={selectedValues.includes("3")}
-                                onChange={() => handleChange("3")}
-                                value="3"
-                                sx={{
-                                    color: "inherit",
-                                    "&.Mui-checked": {color: styles["3"].iconColor},
-                                }}
-                            />
-                        }
-                        label="保留中"
-                        sx={{
-                            height: "30px",
-                            width: "95px",
-                            fontSize: "12px",
-                            padding: "0 8px",
-                            ...(selectedValues.includes("3") && {
-                                backgroundColor: styles["3"].bgcolor,
-                                color: styles["3"].color,
-                                border: `1px solid ${styles["3"].borderColor}`,
-                                borderRadius: "4px",
-                                "&:hover": {
-                                    backgroundColor: styles["3"].bgcolor,
                                     opacity: 0.9,
                                 },
                             }),
