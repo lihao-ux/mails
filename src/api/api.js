@@ -15,14 +15,15 @@ const apiService = {
     updateProjectRecommendations: (projectId, engineerIds) =>
         api.put(`/projects/${projectId}/recommendations`, { recommended_engineers: engineerIds }),
     searchProjects:(params = {}) => api.post('/projects/search', { params }),
-
+    getActiveProjectsSummary:() => api.get(`/projects/active-summary`),
     // ======= 工程师相关 =======
     saveEngineer: (data) => api.post('/engineers', data),
     getEngineers: (params = {}) => api.get('/engineers', { params }),
     getEngineersByMsgid: (msgid) => api.get(`/engineers/by-msgid/${msgid}`),
     updateEngineerRecommendations: (engineerId, projectIds) =>
         api.put(`/engineers/${engineerId}/recommendations`, { recommended_projects: projectIds }),
-
+    searchEngineers: (data) => api.post('/engineers/search', data),
+    updateEngineersBatch: (updates) => api.post('/engineers/batch-update',{ engineers: updates }),
     // ======= 推荐相关 =======
     recommendEngineers: (projectInfo) => api.post('/recommend/engineers', projectInfo),
     recommendProjects: (engineerInfo) => api.post('/recommend/projects', engineerInfo),

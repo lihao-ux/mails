@@ -23,31 +23,47 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import {
-    CheckCircle,       // 通过 (绿色)
-    Warning,           // 警告 (黄色)
-    Error
-} from '@mui/icons-material';
 import api from "../api/api";
 
 const MailDetailPage = () => {
     const [tabValue, setTabValue] = useState(1); // 默认显示人材情報管理标签
-    const [mail, setMail] = useState({}); // 用于存储 API 返回值
+    const [mail, setMail] = useState({
+        id: "",
+        MSGID: "",
+        種別: "",
+        タイトル: "",
+        送信者: "",
+        CC: "",
+        受信時刻: "",
+        ステータス: "",
+        本文_TEXT: "",
+        本文_HTML: "",
+        メールID: "",
+        添付: "",
+        作成者: "",
+        作成時刻: "",
+        更新者: "",
+        更新時刻: "",
+        related_data: []
+    });
     const [relatedStaffs, setRelatedStaffs] = useState([]); // 用于存储 API 返回值
     const { msgid } = useParams();
     useEffect(() => {
-        api.getMessageWithAttachments(msgid)
-            .then(response => {
-                setMail(response.data); // 将返回的邮件数据设置到 mails 数组中
-            })
-            .catch(error => {
-                console.error('メール取得エラー:', error);
-            });
+        getMail()
     }, []);
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
     };
-
+const getMail = (event) => {
+    api.getMessageWithAttachments(msgid)
+        .then(response => {
+            setMail(response.data); // 将返回的邮件数据设置到 mails 数组中
+            console.log("Loaded mail data:", mail); // 确认数据加载
+        })
+        .catch(error => {
+            console.error('メール取得エラー:', error);
+        });
+}
     const handleStatusChange = (event) => {
         console.log(event.target.value)
         setMail({
@@ -104,19 +120,56 @@ const MailDetailPage = () => {
             p.id === id ? {...p, [field]: value} : p
         ));
     };
+    const styles = {
+        '0': { // 稼働中
+            bgcolor: '#d8edd9',  // 比 #e8f5e9 深一点的浅绿色
+            color: '#1b5e20',    // 比 #2e7d32 更深的绿色
+            iconColor: '#388e3c', // 中等深度的绿色
+            borderColor: '#81c784', // 边框色
+            fontWeight: 'bold'    // 加粗字体
+        },
+        '9': { // 待機中
+            bgcolor: '#d1e4f7',  // 浅蓝色背景 (类似浅绿的明度)
+            color: '#0d47a1',    // 深蓝色文字 (类似深绿的对比度)
+            iconColor: '#1976d2', // 图标蓝色
+            borderColor: '#64b5f6', // 边框色
+            fontWeight: 'bold'
+        },
+        '7': { // 調整中
+            bgcolor: '#ffecb3',  // 浅橙色背景 (类似浅绿的明度)
+            color: '#e65100',    // 深橙色文字 (类似深绿的对比度)
+            iconColor: '#ff9800', // 图标橙色
+            borderColor: '#ffb74d', // 边框色
+            fontWeight: 'bold'
+        },
+        '1': { // 緊急/警告 (新增红色样式)
+            bgcolor: '#ffebee',  // 非常浅的红色背景
+            color: '#c62828',    // 深红色文字
+            iconColor: '#d32f2f', // 图标红色
+            borderColor: '#ef9a9a', // 边框色
+            fontWeight: 'bold',
+            animation: 'blink 1.5s infinite' // 可选：添加闪烁动画效果
+        },
+        '11': { bgcolor: '#f5f5f5', color: '#666666', iconColor: '#999999' }   // 默认空状态
+    };
+    const getSelectStyle = (value, theme) => {
+        return styles[value] || styles['11']; // 默认使用調整中样式
+    };
 
-    const TabPanel = ({children, value, index, ...other}) => (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`tabpanel-${index}`}
-            aria-labelledby={`tab-${index}`}
-            {...other}
-        >
-            {/* 移除条件渲染，始终保留 children */}
-            <Box sx={{p: 3}}>{children}</Box>
-        </div>
-    );
+    function doUpdateMail() {
+        const updateArray = [
+            {
+                msgid: mail.MSGID,  // 替换成你的值
+                status: mail.ステータス // 替换成你的值
+            }
+        ];
+        api.updateMessagesStatusBatch(updateArray).then(response => {
+            getMail()
+        })
+            .catch(error => {
+                console.error('メール取得エラー:', error);
+            });
+    }
 
     return (
         <Box sx={{minHeight: '100vh', bgcolor: '#f5f5f5'}}>
@@ -220,16 +273,27 @@ const MailDetailPage = () => {
                         </Typography>
                         <FormControl size="small" sx={{minWidth: 150}}>
                             <Select
-                                value={mail.ステータス}
+                                value={mail.ステータス || ""}
                                 onChange={handleStatusChange}
+                                sx={(theme) => {
+                                    const style = getSelectStyle(mail.ステータス || '', theme);
+                                    return {
+                                        height: '32px',
+                                        fontSize: '12px',
+                                        backgroundColor: style.bgcolor,
+                                        color: style.color,
+                                        '& .MuiSelect-icon': { color: style.iconColor },
+                                        '&:hover': {
+                                            backgroundColor: style.bgcolor,
+                                            opacity: 0.9
+                                        }
+                                    };
+                                }}
                             >
-                                <MenuItem value="7"><CheckCircle sx={{fontSize: '14px'}}
-                                                                 color="success"/>確認要</MenuItem>
-                                <MenuItem value="0"><CheckCircle sx={{fontSize: '14px'}}
-                                                                 color="success"/> 解約成功</MenuItem>
-                                <MenuItem value="1"><Warning sx={{fontSize: '14px'}}
-                                                             color="warning"/> 解約失敗</MenuItem>
-                                <MenuItem value="9"><Error sx={{fontSize: '14px'}} color="error"/> 解約対象</MenuItem>
+                                <MenuItem value="1">解析NG</MenuItem>
+                                <MenuItem value="0">解析OK</MenuItem>
+                                <MenuItem value="9">確認済</MenuItem>
+                                <MenuItem value="7">確認要</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
@@ -254,6 +318,7 @@ const MailDetailPage = () => {
                                 '&:hover': {bgcolor: '#1976d2'},
                                 px: 4
                             }}
+                            onClick={(event) => doUpdateMail()}
                         >
                             更新
                         </Button>

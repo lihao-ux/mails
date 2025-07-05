@@ -133,6 +133,7 @@ const MailListTable = () => {
             }));
             api.updateMessagesStatusBatch(newArray).then(response => {
                 getEmails();
+                setupdateMails([]);
             })
                 .catch(error => {
                     console.error('メール取得エラー:', error);
@@ -487,16 +488,18 @@ const MailListTable = () => {
                                     </TableCell>
                                     <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', fontSize: '0.8rem', py: 1, lineHeight: '1.5' }}>
                                         <Select
-                                            value={mail.ステータス}  // 如果mail.ステータス为null或undefined，则使用"1"
+                                            value={mail.ステータス}
                                             onChange={(e) => {
+                                                const newValue = e.target.value;
                                                 // 更新原数组
                                                 const updatedProjects = mails.map(item =>
                                                     item.MSGID === mail.MSGID
-                                                        ? {...item, ステータス: e.target.value}
+                                                        ? {...item, ステータス: newValue}
                                                         : item
                                                 );
-                                                upsertItem(mail);
                                                 setMails(updatedProjects);
+                                                upsertItem({...mail, ステータス: newValue});
+
                                             }}
                                             sx={(theme) => {
                                                 // const style = getSelectStyle(mail.ステータス ?? '1', theme);  // 同样处理这里的默认值
