@@ -360,6 +360,7 @@ const getMail = (event) => {
                                             <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>稼働可能時間</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>想定単価</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>詳細</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>履歴書</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>

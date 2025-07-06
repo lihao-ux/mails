@@ -74,8 +74,6 @@ const StaffListTable = () => {
                     return [...prevItems, latestUpdateItem];
                 }
             });
-
-            console.log('最新updateItem:', latestUpdateItem);
             return newStaffs;
         });
     };
@@ -182,6 +180,18 @@ const StaffListTable = () => {
                 console.error('メール取得エラー:', error);
             });
         }
+    }
+
+    function doDeleteStaffs() {
+        const ids = selected.map(id =>
+            staffs.find(staff => staff.id === id)?.人材ID
+        ).filter(Boolean);
+        api.deleteEngineersByIds(ids).then(response => {
+            getStaffs();
+            setupdateStaffs([]);
+        }).catch(error => {
+            console.error('メール取得エラー:', error);
+        });
     }
 
     return (
@@ -338,10 +348,12 @@ const StaffListTable = () => {
                 </Stack>
             </Box>
             <TableContainer component={Paper} elevation={1} sx={{
-                maxHeight: 600, overflow: 'auto',  // 添加滚动条
+                maxHeight: 600,
+                overflowX: 'auto',      // 横向滚动
+                overflowY: 'auto',      // 保留纵向滚动
                 position: 'relative'
             }}>
-                <Table stickyHeader sx={{minWidth: 800}}>
+                <Table stickyHeader sx={{ minWidth: 1600,tableLayout: 'fixed'}}>
                     <TableHead sx={{
                         backgroundColor: '#f5f5f5',
                         '& .MuiTableCell-root': {
@@ -391,7 +403,8 @@ const StaffListTable = () => {
                                 width: '100px',
                                 fontSize: '0.8rem',
                                 py: 1,
-                                lineHeight: '1.5'
+                                lineHeight: '1.5',
+                                with:50
                             }}>年齢</TableCell>
                             <TableCell sx={{
                                 fontWeight: 'bold',
@@ -408,7 +421,8 @@ const StaffListTable = () => {
                                 whiteSpace: 'nowrap',
                                 fontSize: '0.8rem',
                                 py: 1,
-                                lineHeight: '1.5'
+                                lineHeight: '1.5',
+                                width: '160px'
                             }}>稼働可能時間</TableCell>
                             <TableCell sx={{
                                 fontWeight: 'bold',
@@ -437,6 +451,26 @@ const StaffListTable = () => {
                                 py: 1,
                                 lineHeight: '1.5'
                             }}>案件</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '400px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>履歴書
+                            </TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '400px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>備考
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -496,15 +530,9 @@ const StaffListTable = () => {
                                         whiteSpace: 'nowrap',
                                         fontSize: '0.8rem',
                                         py: 1,
-                                        lineHeight: '1.5'
+                                        lineHeight: '1.5',
                                     }}>
-                                        <TextField
-                                            value={staff.年齢}
-                                            onChange={(e) => handleStaffFieldChange(staff.id, '年齢', e.target.value)}
-                                            variant="outlined"
-                                            size="small"
-                                            fullWidth
-                                        />
+                                        {staff.年齢}
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
@@ -600,6 +628,55 @@ const StaffListTable = () => {
                                             ))}
                                         </Select>
                                     </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            border: '1px solid #ddd',
+                                            whiteSpace: 'nowrap',
+                                            fontSize: '0.8rem',
+                                            py: 1,
+                                            lineHeight: '1.5',
+                                            cursor: 'pointer', // 添加手型光标
+                                            color: 'primary.main', // 使用主题主色
+                                            textDecoration: 'underline', // 添加下划线
+                                            '&:hover': {
+                                                backgroundColor: 'action.hover', // 悬停背景色
+                                                textDecoration: 'none' // 悬停时取消下划线
+                                            }
+                                        }}
+                                        onClick={() => {
+                                            // 创建下载链接
+                                            const link = document.createElement('a');
+                                            link.href = staff.推薦案件ID1; // 假设这是文件路径
+                                            link.download = staff.推薦案件ID1.split('/').pop(); // 获取文件名
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }}
+                                    >
+                                        {/*{staff.推薦案件ID1.split('/').pop()} /!* 只显示文件名 *!/*/}
+                                        test
+                                    </TableCell>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        color: '#1976d2',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
+                                        <TextField
+                                            value={staff.備考}
+                                            onChange={(e) => handleStaffFieldChange(staff.id, '備考', e.target.value)}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                            InputProps={{
+                                                sx: {
+                                                    fontSize: '0.75rem', // 更小的字体
+                                                    padding: '6px 8px',  // 可选，控制内部 padding
+                                                },
+                                            }}
+                                        />
+                                    </TableCell>
                                 </TableRow>
                             );
                         })}
@@ -652,6 +729,7 @@ const StaffListTable = () => {
                         size="small"
                         variant="contained"
                         color="error"
+                        onClick={(event) => doDeleteStaffs()}
                         sx={{
                             fontSize: '0.7rem',
                             py: 0.5,

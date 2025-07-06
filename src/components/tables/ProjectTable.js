@@ -13,24 +13,27 @@ import {
     Select,
     MenuItem,
     Button,
-    Box, TablePagination, InputAdornment, FormControlLabel, Checkbox
+    Box, TablePagination, InputAdornment, FormControlLabel, Checkbox,OutlinedInput,ListItemText
 } from '@mui/material';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-    CheckCircle,       // 通过 (绿色)
-    Warning,           // 警告 (黄色)
-    Error
-} from '@mui/icons-material';
 import api from "../../api/api";
+import Dialog from "@mui/material/Dialog";
+import Alert from "@mui/material/Alert";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogActions from "@mui/material/DialogActions";
 
 const ProjectTable = () => {
-    const [locationValues, setLocationValues] = React.useState({});
     const [searchQuery, setSearchQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const isSelected = (id) => selected.indexOf(id) !== -1;
     const [selectedValues, setSelectedValues] = useState('');
+    const [projects, setProjects] = useState([]);
+    const [updateProjects, setUpdateProjects] = useState([]);
+    const [staffs, setStaffs] = useState([]);
+    const [doUpdate, setDoUpdate] = useState(false);
     const handleCheckboxClick = (event, id) => {
         event.stopPropagation(); // 阻止事件冒泡到行
 
@@ -45,8 +48,12 @@ const ProjectTable = () => {
 
         setSelected(newSelected);
     };
-    const [projects, setProjects] = useState([]);
+
     useEffect(() => {
+        getProjects();
+        getStaffs();
+    }, []);
+    const getProjects = () =>{
         api.getProjects()
             .then(response => {
                 setProjects(response.data); // 将返回的邮件数据设置到 mails 数组中
@@ -54,13 +61,12 @@ const ProjectTable = () => {
             .catch(error => {
                 console.error('案件情報取得エラー:', error);
             });
-    }, []);
+    }
     const findByConditions= () => {
         const params = {
             status:selectedValues,
             name_or_skill: searchQuery
         };
-        console.log(selectedValues)
         api.searchProjects(params)
             .then(response => {
                 console.log(response.data)
@@ -70,7 +76,43 @@ const ProjectTable = () => {
                 console.error('案件情報取得エラー:', error);
             });
     };
+    function getStaffs() {
+        api.getAvailableEngineersSummary()
+            .then(response => {
+                setStaffs(response.data);
+            })
+            .catch(error => {
+                console.error('メール取得エラー:', error);
+            });
+    }
+    const handleProjectFieldChange = (projectId, field, value) => {
+        setProjects(prevProjects => {
+            const newProjects = prevProjects.map(project =>
+                project.id === projectId ? {...project, [field]: value} : project
+            );
 
+            // 1. 获取最新的updateItem（基于newStaffs）
+            const latestUpdateItem = newProjects.find(project => project.id === projectId);
+
+            // 2. 更新updateStaffs
+            setUpdateProjects(prevItems => {
+                const existingIndex = prevItems.findIndex(item => item.id === projectId);
+
+                if (existingIndex >= 0) {
+                    // 存在则更新
+                    const updatedItems = [...prevItems];
+                    updatedItems[existingIndex] = latestUpdateItem;
+                    return updatedItems;
+                } else {
+                    // 不存在则添加
+                    return [...prevItems, latestUpdateItem];
+                }
+            });
+
+            console.log('最新updateItem:', latestUpdateItem);
+            return newProjects;
+        });
+    };
     // 全选/取消全选
     const handleSelectAll = (event) => {
         if (event.target.checked) {
@@ -80,6 +122,17 @@ const ProjectTable = () => {
         }
         setSelected([]);
     };
+    function doDeleteProjects() {
+        const ids = selected.map(id =>
+            projects.find(project => project.id === id)?.案件ID
+        ).filter(Boolean);
+        api.deleteProjectsByIds(ids).then(response => {
+            getProjects();
+            setUpdateProjects([]);
+        }).catch(error => {
+            console.error('メール取得エラー:', error);
+        });
+    }
     const [rowsPerPage, setRowsPerPage] = useState(10);
     // 分页处理函数
     const handleChangePage = (event, newPage) => {
@@ -97,31 +150,6 @@ const ProjectTable = () => {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
     );
-
-    const renderStatusIcon = (status) => {
-        if (status === '1') {
-            return <CheckCircle fontSize="small" color="success"/>;
-        }
-        if (status === '2') {
-            return <Warning fontSize="small" color="warning"/>;
-        }
-        if (status === '3') {
-            return <Error fontSize="small" color="error"/>;
-        }
-        return <Typography variant="body2" sx={{fontSize: '0.75rem'}}>{status}</Typography>;
-    };
-    const [statusValues, setStatusValues] = React.useState(
-        projects.reduce((acc, staff) => ({...acc, [staff.id]: staff.status}), {})
-    );
-    const handleLocationChange = (id, value) => {
-        setLocationValues(prev => ({
-            ...prev,
-            [id]: value === "" ? "" : value, // 允许清空
-        }));
-    };
-    const handleStatusChange = (staffId, newStatus) => {
-        setStatusValues((prev) => ({...prev, [staffId]: newStatus}));
-    };
     const handleChange = (value) => {
         setSelectedValues((prev) =>
             prev.includes(value)
@@ -155,6 +183,19 @@ const ProjectTable = () => {
     const getSelectStyle = (value, theme) => {
         return styles[value] || styles['3']; // 默认使用調整中样式
     };
+    function doUpdateProject() {
+        console.log(updateProjects)
+        if (updateProjects.length === 0) {
+            setDoUpdate(true)
+        } else {
+            api.updateProjectsBatch(updateProjects).then(response => {
+                getProjects();
+                setUpdateProjects([]);
+            }).catch(error => {
+                console.error('メール取得エラー:', error);
+            });
+        }
+    }
     return (
         <Box>
             <TextField
@@ -308,12 +349,19 @@ const ProjectTable = () => {
                     />
                 </Stack>
             </Box>
-            <TableContainer component={Paper} elevation={1} sx={{
-                maxHeight: 600,
-                overflow: 'auto',  // 添加滚动条
-                position: 'relative' // 确保固定表头
-            }}>
-                <Table stickyHeader sx={{minWidth: 800}}>
+            <TableContainer component={Paper}
+                            elevation={1}
+                            sx={{
+                                maxHeight: 600,
+                                overflowX: 'auto',      // 横向滚动
+                                overflowY: 'auto',      // 保留纵向滚动
+                                position: 'relative'
+                            }}
+            >
+                <Table stickyHeader sx={{
+                    minWidth: 1600,           // 整张表的宽度（保证可横向滚动）
+                    tableLayout: 'fixed'      // 列宽固定
+                }}>
                     <TableHead sx={{
                         backgroundColor: '#f5f5f5',
                         '& .MuiTableCell-root': {
@@ -380,7 +428,8 @@ const ProjectTable = () => {
                                 whiteSpace: 'nowrap',
                                 fontSize: '0.8rem',
                                 py: 1,
-                                lineHeight: '1.5'
+                                lineHeight: '1.5',
+                                width: '160px'
                             }}>単価</TableCell>
                             <TableCell sx={{
                                 fontWeight: 'bold',
@@ -400,9 +449,30 @@ const ProjectTable = () => {
                                 py: 1,
                                 lineHeight: '1.5'
                             }}>AI推薦技術者</TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '400px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>技術者
+                            </TableCell>
+                            <TableCell sx={{
+                                fontWeight: 'bold',
+                                border: '1px solid #ddd',
+                                whiteSpace: 'nowrap',
+                                width: '400px',
+                                fontSize: '0.8rem',
+                                py: 1,
+                                lineHeight: '1.5'
+                            }}>備考
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
+
                         {paginatedProjects.map((project) => {
                             const isItemSelected = isSelected(project.id);
                             return (
@@ -426,7 +496,13 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {project.案件名}
+                                        <TextField
+                                            value={project?.案件名}
+                                            onChange={(e) => handleProjectFieldChange(project.id, '案件名', e.target.value)}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                        />
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
@@ -438,13 +514,7 @@ const ProjectTable = () => {
                                         <Select
                                             value={project.ステータス}
                                             onChange={(e) => {
-                                                // 更新原数组
-                                                const updatedProjects = projects.map(item =>
-                                                    item.id === project.id
-                                                        ? {...item, ステータス: e.target.value}
-                                                        : item
-                                                );
-                                                setProjects(updatedProjects);
+                                                handleProjectFieldChange(project.id, 'ステータス', e.target.value)
                                             }}
                                             sx={(theme) => {
                                                 const style = getSelectStyle(project.ステータス, theme);
@@ -474,16 +544,8 @@ const ProjectTable = () => {
                                         lineHeight: '1.5'
                                     }}>
                                         <TextField
-                                            value={project.作業場所} // 直接绑定到原数据
-                                            onChange={(e) => {
-                                                // 更新原数组
-                                                const updatedProjects = project.map(item =>
-                                                    item.id === project.id
-                                                        ? {...item, 作業場所: e.target.value}
-                                                        : item
-                                                );
-                                                setProjects(updatedProjects); // 触发重新渲染
-                                            }}
+                                            value={project?.作業場所}
+                                            onChange={(e) => handleProjectFieldChange(project.id, '作業場所', e.target.value)}
                                             variant="outlined"
                                             size="small"
                                             fullWidth
@@ -498,16 +560,8 @@ const ProjectTable = () => {
                                         lineHeight: '1.5'
                                     }}>
                                         <TextField
-                                            value={project.必要なスキル} // 直接绑定到原数据
-                                            onChange={(e) => {
-                                                // 更新原数组
-                                                const updatedProjects = projects.map(item =>
-                                                    item.id === project.id
-                                                        ? {...item, 必要なスキル: e.target.value}
-                                                        : item
-                                                );
-                                                setProjects(updatedProjects); // 触发重新渲染
-                                            }}
+                                            value={project?.必要なスキル}
+                                            onChange={(e) => handleProjectFieldChange(project.id, '必要なスキル', e.target.value)}
                                             variant="outlined"
                                             size="small"
                                             fullWidth
@@ -520,7 +574,13 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {project.単価}
+                                        <TextField
+                                            value={project?.単価}
+                                            onChange={(e) => handleProjectFieldChange(project.id, '単価', e.target.value)}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                        />
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
@@ -529,7 +589,13 @@ const ProjectTable = () => {
                                         py: 1,
                                         lineHeight: '1.5'
                                     }}>
-                                        {project.期間}
+                                        <TextField
+                                            value={project?.期間}
+                                            onChange={(e) => handleProjectFieldChange(project.id, '期間', e.target.value)}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                        />
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
@@ -539,6 +605,53 @@ const ProjectTable = () => {
                                         lineHeight: '1.5'
                                     }}>
                                         {project?.推薦案件ID1}
+                                    </TableCell>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
+                                        <Select
+                                            multiple
+                                            value={Array.isArray(project.人材ID) ? project.人材ID : []}
+                                            onChange={(e) => handleProjectFieldChange(project.id, '人材ID', e.target.value)}
+                                            input={<OutlinedInput label="人材" />}
+                                            renderValue={(selected) =>
+                                                Array.isArray(selected)
+                                                    ? selected
+                                                        .map(id => staffs.find(t => t.人材ID === id)?.氏名 || id)
+                                                        .join(', ')
+                                                    : ''
+                                            }
+                                        >
+                                            {staffs.map(staff => (
+                                                <MenuItem key={staff.人材ID} value={staff.人材ID}>
+                                                    <Checkbox
+                                                        checked={(project.人材ID || []).includes(staff.人材ID)}
+                                                    />
+                                                    <ListItemText
+                                                        primary={`${staff.氏名}（${staff.人材ID}）`}
+                                                    />
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </TableCell>
+                                    <TableCell sx={{
+                                        border: '1px solid #ddd',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.8rem',
+                                        py: 1,
+                                        lineHeight: '1.5'
+                                    }}>
+                                        <TextField
+                                            value={project?.備考}
+                                            onChange={(e) => handleProjectFieldChange(project.id, '備考', e.target.value)}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                        />
                                     </TableCell>
                                 </TableRow>
                             );
@@ -580,9 +693,10 @@ const ProjectTable = () => {
                 <Stack direction="row" spacing={1}>
                     <Button
                         size="small"
-                        variant="contained"
+                        variant="contained"s
                         color="warning"
                         sx={{fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto'}}
+                        onClick={(event) => doUpdateProject()}
                     >
                         <EditDocumentIcon fontSize="small" sx={{mr: 1}}/>
                         更新
@@ -591,6 +705,7 @@ const ProjectTable = () => {
                         size="small"
                         variant="contained"
                         color="error"
+                        onClick={(event) => doDeleteProjects()}
                         sx={{
                             fontSize: '0.7rem',
                             py: 0.5,
@@ -601,6 +716,27 @@ const ProjectTable = () => {
                     >
                         削除
                     </Button>
+                    <Dialog
+                        open={doUpdate}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <Alert severity="warning" sx={{mb: 2}}>
+                            警告
+                        </Alert>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                少なくとも1件のメール情報を更新してください。
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={(event) => {
+                                setDoUpdate(false)
+                            }} autoFocus>
+                                确认
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
                 </Stack>
             </Box>
         </Box>

@@ -1,23 +1,28 @@
-import React, { useState,useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-    TableContainer,
-    Table,
-    TableHead,
-    TableBody,
-    TableRow,
-    TableCell,
-    Paper,
-    Button,
-    Stack,
-    Typography,
     Box,
+    Button,
     Checkbox,
-    TextField, InputAdornment, FormControlLabel, TablePagination, Select, MenuItem
+    FormControlLabel,
+    InputAdornment,
+    MenuItem,
+    Paper,
+    Select,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+    TextField,
+    Typography
 } from '@mui/material';
 import api from '../../api/api';
-import { useNavigate } from 'react-router-dom';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import {useNavigate} from 'react-router-dom';
+import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers';
+import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import ja from 'date-fns/locale/ja'; // 导入日语本地化
 import SearchIcon from '@mui/icons-material/Search';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
@@ -28,11 +33,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Alert from '@mui/material/Alert';
-import {
-    CheckCircle,       // 通过 (绿色)
-    Warning,           // 警告 (黄色)
-    Error
-} from '@mui/icons-material';
 
 const MailListTable = () => {
     const [mails, setMails] = useState([]); // 用于存储 API 返回值
@@ -142,36 +142,44 @@ const MailListTable = () => {
 
     };
     // 状态选项（显示汉字，值用英文）
-    const [status, setStatus] = useState({
-        unread: false,    // 未読
-        inProgress: false, // 処理中
-        completed: false   // 完了
-    });
+    const [status, setStatus] = useState([]);
 
     const [category, setCategory] = useState({
         caseInfo: false,   // 案件情報
         talentInfo: false  // 人材情報
     });
-
-    // 处理状态变化
-    const handleStatusChange = (key) => (event) => {
-        setStatus(prev => ({ ...prev, [key]: event.target.checked }));
+    // 切换选中状态
+    const handleChange = (statusValue) => (e) => {
+        setStatus((prev) =>
+            e.target.checked
+                ? [...prev, statusValue]          // 选中 → 添加（如 "0"）
+                : prev.filter((v) => v !== statusValue) // 取消 → 移除
+        );
     };
-
     const handleCategoryChange = (key) => (event) => {
         setCategory(prev => ({ ...prev, [key]: event.target.checked }));
     };
-
     // 提交搜索
     const handleSearch = () => {
-        const activeStatus = Object.keys(status).filter(key => status[key]);
-        const activeCategory = Object.keys(category).filter(key => category[key]);
-
-        console.log('搜索参数:', {
-            searchQuery,
-            status: activeStatus,
-            category: activeCategory
-        });
+       const params = {
+           status:status,
+           received_time_from:dateParse(startDate),
+           received_time_to:dateParse(endDate),
+           search_text:searchQuery
+       }
+       api.searchMessages(params).then(response => {
+           setMails(response.data)
+           setupdateMails([]);
+       }).catch(error => {
+               console.error('メール取得エラー:', error);
+           });
+    };
+    const dateParse = (date) => {
+// 获取年月日并补零
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需+1
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
     const styles = {
         '0': { // 稼働中
@@ -209,15 +217,16 @@ const MailListTable = () => {
     };
     // 检查是否选中
     const isSelected = (id) => selected.indexOf(id) !== -1;
-    const renderStatusIcon = (status) => {
-        const iconStyle = { fontSize: '14px' }; // 调整图标大小
 
-        if (status === '0') return <><CheckCircle sx={iconStyle} color="success" /> 解析OK</>;
-        if (status === '7') return <><Warning sx={iconStyle} color="warning" /> 確認要</>;
-        if (status === '1') return <><Error sx={iconStyle} color="error" /> 解析NG</>;
-        if (status === '9') return <><CheckCircle sx={iconStyle} color="success" /> 確認済</>;
-        return <>{status}</>;
-    };
+    function doDeleteMessages() {
+        api.deleteMessagesBatch(selected).then(response => {
+            getEmails()
+            setupdateMails([])
+        }).catch(error => {
+            console.error('メール取得エラー:', error);
+        });
+    }
+
     return (
         <Box>
             <Box sx={{ p: 2, backgroundColor: '#e8f5e9', borderRadius: 1, mb: 2 }}>
@@ -238,35 +247,42 @@ const MailListTable = () => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        checked={status.unread}
-                                        onChange={handleStatusChange('unread')}
+                                        checked={status.includes('0')}
+                                        onChange={handleChange('0')} // 直接传0
                                         size="small"
                                     />
                                 }
-                                label="解約成功"
-                                sx={{ mr: 0 }}
+                                label="解析OK"
                             />
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        checked={status.inProgress}
-                                        onChange={handleStatusChange('inProgress')}
+                                        checked={status.includes('1')}
+                                        onChange={handleChange('1')} // 直接传0
                                         size="small"
                                     />
                                 }
-                                label="解約失敗"
-                                sx={{ mr: 0 }}
+                                label="解析NG"
                             />
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        checked={status.completed}
-                                        onChange={handleStatusChange('completed')}
+                                        checked={status.includes('9')}
+                                        onChange={handleChange('9')} // 直接传0
                                         size="small"
                                     />
                                 }
-                                label="解約対象"
-                                sx={{ mr: 0 }}
+                                label="確認済"
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={status.includes('7')}
+                                        onChange={handleChange('7')} // 直接传0
+                                        size="small"
+                                    />
+                                }
+                                label="確認要"
                             />
                         </Box>
                     </Box>
@@ -398,6 +414,7 @@ const MailListTable = () => {
                                         <Button
                                             variant="contained"
                                             color="primary"
+                                            onClick={() =>handleSearch()}
                                             sx={{
                                                 height: '40px',
                                                 borderTopLeftRadius: 0,
@@ -604,9 +621,7 @@ const MailListTable = () => {
                             px: 1.5,
                             minWidth: 'auto'
                         }}
-                        onClick={(event) => {
-                            console.log(updateMails)
-                        }}
+                        onClick={(event) => doDeleteMessages()}
                         startIcon={<DeleteSweepIcon fontSize="small" />}  // ✅ 图标放在startIcon中
                     >
                         削除
