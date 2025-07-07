@@ -29,6 +29,7 @@ const StaffListTable = () => {
     const [selectedValues, setSelectedValues] = useState('');
     const [doUpdate, setDoUpdate] = useState(false);
     const [selected, setSelected] = useState([]);
+    const [warnDel, setWarnDel] = useState(false);
     const isSelected = (id) => selected.indexOf(id) !== -1;
     const handleSelectAll = (event) => {
         if (event.target.checked) {
@@ -183,6 +184,9 @@ const StaffListTable = () => {
     }
 
     function doDeleteStaffs() {
+        if (selected.length===0){
+            setWarnDel(true)
+        }else {
         const ids = selected.map(id =>
             staffs.find(staff => staff.id === id)?.人材ID
         ).filter(Boolean);
@@ -191,7 +195,7 @@ const StaffListTable = () => {
             setupdateStaffs([]);
         }).catch(error => {
             console.error('メール取得エラー:', error);
-        });
+        });}
     }
 
     return (
@@ -757,6 +761,25 @@ const StaffListTable = () => {
                             <Button onClick={(event) => {
                                 setDoUpdate(false)
                             }} autoFocus>
+                                确认
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                    <Dialog
+                        open={warnDel}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <Alert severity="warning" sx={{ mb: 2 }}>
+                            警告
+                        </Alert>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                メールを1件選択して削除してください。
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={(event) => { setWarnDel(false) }} autoFocus>
                                 确认
                             </Button>
                         </DialogActions>

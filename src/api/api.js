@@ -16,7 +16,7 @@ const apiService = {
     getProjectsByMsgid: (msgid) => api.get(`/projects/by-msgid/${msgid}`),
     updateProjectRecommendations: (projectId, engineerIds) =>
         api.put(`/projects/${projectId}/recommendations`, { recommended_engineers: engineerIds }),
-    searchProjects:(params = {}) => api.post('/projects/search', { params }),
+    searchProjects:(params) => api.post('/projects/search', params),
     getActiveProjectsSummary:() => api.get(`/projects/active-summary`),
     updateProjectsBatch: (updates) => api.post('/projects/batch/update',{ projects: updates }),
     deleteProjectsByIds:(ids) => api.post('/projects/delete-by-ids', { project_ids: ids }),

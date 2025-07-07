@@ -3,7 +3,7 @@ import { Tabs, Tab, Box, Stack } from '@mui/material';
 import AttachEmailOutlinedIcon from '@mui/icons-material/AttachEmailOutlined';
 import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-
+import DownloadIcon from '@mui/icons-material/Download';
 const MainLayout = () => {
     const navigate = useNavigate(); // 在组件内添加
   const location = useLocation();
@@ -29,12 +29,13 @@ const MainLayout = () => {
     <Box>
       {/* 顶部导航栏 */}
       <Box sx={{
-        borderBottom: 1,
-        borderColor: 'divider',
-        backgroundColor: '#f5f5f5',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        mb: 2,
-        display: 'flex'
+          borderBottom: 1,
+          borderColor: 'divider',
+          backgroundColor: '#f5f5f5',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          mb: 2,
+          display: 'flex',
+          alignItems: 'center' // ✅ 垂直居中
       }}>
         <Tabs
             value={getActiveTab()}
@@ -76,20 +77,46 @@ const MainLayout = () => {
             sx={tabSx}
           />
         </Tabs>
+          {/* 右侧按钮（仅在 /mails 页面显示） */}
+          {getActiveTab() === '/mails' && (
+              <button
+                  style={{
+                      backgroundColor: '#1976d2',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '6px 12px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      marginLeft: '1155px',
+                      height: '40px',
+                      display: 'flex',          // 添加 flex 布局
+                      alignItems: 'center',    // 垂直居中
+                      justifyContent: 'center', // 水平居中（可选）
+                      gap: '8px'               // 图标和文本之间的间距
+                  }}
+                  onClick={() => {
+                      console.log('新規追加 clicked');
+                  }}
+              >
+                  <DownloadIcon fontSize="small"/>
+                  メール取得
+              </button>
+          )}
       </Box>
 
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        width: '100%',
-        px: 2
-      }}>
         <Box sx={{
-          width: '80%'
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%',
+            px: 2
         }}>
-          <Outlet />
+            <Box sx={{
+                width: '80%'
+            }}>
+                <Outlet/>
+            </Box>
         </Box>
-      </Box>
     </Box>
   );
 };

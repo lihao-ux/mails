@@ -69,6 +69,7 @@ const MailListTable = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const [warnOpen, setWarnOpen] = useState(false);
+    const [warnDel, setWarnDel] = useState(false);
     const [doUpdate, setDoUpdate] = useState(false);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
@@ -175,7 +176,6 @@ const MailListTable = () => {
            });
     };
     const dateParse = (date) => {
-// 获取年月日并补零
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需+1
         const day = String(date.getDate()).padStart(2, '0');
@@ -219,6 +219,9 @@ const MailListTable = () => {
     const isSelected = (id) => selected.indexOf(id) !== -1;
 
     function doDeleteMessages() {
+        if (selected.length===0){
+            setWarnDel(true)
+        }
         api.deleteMessagesBatch(selected).then(response => {
             getEmails()
             setupdateMails([])
@@ -642,7 +645,7 @@ const MailListTable = () => {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={(event) => { setWarnOpen(false) }} autoFocus>setWarnOpen
+                    <Button onClick={(event) => { setWarnOpen(false) }} autoFocus>
                         确认
                     </Button>
                 </DialogActions>
@@ -662,6 +665,25 @@ const MailListTable = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={(event) => { setDoUpdate(false) }} autoFocus>
+                        确认
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={warnDel}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                    警告
+                </Alert>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                            メールを1件選択して削除してください。
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={(event) => { setWarnDel(false) }} autoFocus>
                         确认
                     </Button>
                 </DialogActions>

@@ -30,6 +30,7 @@ const ProjectTable = () => {
     const [selected, setSelected] = useState([]);
     const isSelected = (id) => selected.indexOf(id) !== -1;
     const [selectedValues, setSelectedValues] = useState('');
+    const [warnDel, setWarnDel] = useState(false);
     const [projects, setProjects] = useState([]);
     const [updateProjects, setUpdateProjects] = useState([]);
     const [staffs, setStaffs] = useState([]);
@@ -123,6 +124,9 @@ const ProjectTable = () => {
         setSelected([]);
     };
     function doDeleteProjects() {
+        if (selected.length===0){
+            setWarnDel(true)
+        }else {
         const ids = selected.map(id =>
             projects.find(project => project.id === id)?.案件ID
         ).filter(Boolean);
@@ -131,7 +135,7 @@ const ProjectTable = () => {
             setUpdateProjects([]);
         }).catch(error => {
             console.error('メール取得エラー:', error);
-        });
+        });}
     }
     const [rowsPerPage, setRowsPerPage] = useState(10);
     // 分页处理函数
@@ -733,6 +737,25 @@ const ProjectTable = () => {
                             <Button onClick={(event) => {
                                 setDoUpdate(false)
                             }} autoFocus>
+                                确认
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                    <Dialog
+                        open={warnDel}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <Alert severity="warning" sx={{ mb: 2 }}>
+                            警告
+                        </Alert>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                メールを1件選択して削除してください。
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={(event) => { setWarnDel(false) }} autoFocus>
                                 确认
                             </Button>
                         </DialogActions>
