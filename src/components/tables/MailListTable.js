@@ -133,7 +133,7 @@ const MailListTable = () => {
                 status: item.ステータス
             }));
             api.updateMessagesStatusBatch(newArray).then(response => {
-                getEmails();
+                handleSearch()
                 setupdateMails([]);
             })
                 .catch(error => {
@@ -145,10 +145,7 @@ const MailListTable = () => {
     // 状态选项（显示汉字，值用英文）
     const [status, setStatus] = useState([]);
 
-    const [category, setCategory] = useState({
-        caseInfo: false,   // 案件情報
-        talentInfo: false  // 人材情報
-    });
+    const [category, setCategory] = useState([]);
     // 切换选中状态
     const handleChange = (statusValue) => (e) => {
         setStatus((prev) =>
@@ -157,29 +154,39 @@ const MailListTable = () => {
                 : prev.filter((v) => v !== statusValue) // 取消 → 移除
         );
     };
-    const handleCategoryChange = (key) => (event) => {
-        setCategory(prev => ({ ...prev, [key]: event.target.checked }));
+    const handleCategoryChange = (categoryValue) => (e) => {
+        setCategory((prev) =>
+            e.target.checked
+                ? [...prev, categoryValue]          // 选中 → 添加（如 "0"）
+                : prev.filter((v) => v !== categoryValue) // 取消 → 移除
+        );
     };
     // 提交搜索
     const handleSearch = () => {
        const params = {
            status:status,
+           type:category,
            received_time_from:dateParse(startDate),
            received_time_to:dateParse(endDate),
            search_text:searchQuery
        }
        api.searchMessages(params).then(response => {
+           console.log(response.data)
            setMails(response.data)
            setupdateMails([]);
+           setPage(0);
        }).catch(error => {
                console.error('メール取得エラー:', error);
            });
     };
     const dateParse = (date) => {
+        if (date!=null){
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需+1
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+        }
+        return date;
     };
     const styles = {
         '0': { // 稼働中
@@ -223,7 +230,7 @@ const MailListTable = () => {
             setWarnDel(true)
         }
         api.deleteMessagesBatch(selected).then(response => {
-            getEmails()
+            handleSearch()
             setupdateMails([])
         }).catch(error => {
             console.error('メール取得エラー:', error);
@@ -299,8 +306,8 @@ const MailListTable = () => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        checked={category.caseInfo}
-                                        onChange={handleCategoryChange('caseInfo')}
+                                        checked={category.includes('案件')}
+                                        onChange={handleCategoryChange('案件')}
                                         size="small"
                                     />
                                 }
@@ -310,8 +317,8 @@ const MailListTable = () => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        checked={category.talentInfo}
-                                        onChange={handleCategoryChange('talentInfo')}
+                                        checked={category.includes('人材')}
+                                        onChange={handleCategoryChange('人材')}
                                         size="small"
                                     />
                                 }

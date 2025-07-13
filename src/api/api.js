@@ -18,7 +18,7 @@ const apiService = {
         api.put(`/projects/${projectId}/recommendations`, { recommended_engineers: engineerIds }),
     searchProjects:(params) => api.post('/projects/search', params),
     getActiveProjectsSummary:() => api.get(`/projects/active-summary`),
-    updateProjectsBatch: (updates) => api.post('/projects/batch/update',{ projects: updates }),
+    updateProjectsBatch: (updates) => api.post('/projects/batch-update',{ projects: updates }),
     deleteProjectsByIds:(ids) => api.post('/projects/delete-by-ids', { project_ids: ids }),
     // ======= 工程师相关 =======
     deleteEngineersByIds:(ids) => api.post('/engineers/delete-by-ids', { engineer_ids: ids }),

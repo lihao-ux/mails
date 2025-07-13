@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState,useRef} from 'react';
 import {Link,useParams} from 'react-router-dom';
 import {
     Box,
@@ -20,6 +20,7 @@ import {
     IconButton,
     Breadcrumbs
 } from '@mui/material';
+import EditablePopoverCell from './tools/EditablePopoverCell';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -47,6 +48,7 @@ const MailDetailPage = () => {
         related_data: []
     });
     const [relatedStaffs, setRelatedStaffs] = useState([]); // 用于存储 API 返回值
+    const [relatedEvents, setRelatedEvents] = useState([]); // 用于存储 API 返回值
     const { msgid } = useParams();
     useEffect(() => {
         getMail()
@@ -54,23 +56,45 @@ const MailDetailPage = () => {
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
     };
+    const scrollRef = useRef(null);
+    const [scrollTop, setScrollTop] = useState(0);
+    const handleScroll = () => {
+        if (scrollRef.current) {
+            setScrollTop(scrollRef.current.scrollTop);
+        }
+    };
+  useEffect(() => {
+           if (scrollRef.current && mail.本文_HTML) {
+                 scrollRef.current.scrollTop = 0; // 仅在切换 HTML 时复位
+               }
+         }, [mail.本文_HTML]);
 const getMail = (event) => {
     api.getMessageWithAttachments(msgid)
         .then(response => {
             setMail(response.data); // 将返回的邮件数据设置到 mails 数组中
-            console.log("Loaded mail data:", mail); // 确认数据加载
+            const list = response.data.related_data;
+            const type =response.data.種別;
+            const staffId = list?.[0]?.人材ID;
+            const eventId = list?.[0]?.案件ID;
+            if(type ==='人材'||(typeof staffId === 'string' && staffId.trim() !== '')){
+                setRelatedStaffs(list)
+                setTabValue(1)
+            }else
+            if(type ==='案件'||(typeof eventId === 'string' && eventId.trim() !== '')){
+                setRelatedEvents(list)
+                setTabValue(0)
+            }
+
         })
         .catch(error => {
             console.error('メール取得エラー:', error);
         });
 }
     const handleStatusChange = (event) => {
-        console.log(event.target.value)
         setMail({
             ...mail,
             ステータス: event.target.value
         });
-        console.log("test",mail.ステータス)
     };
     const HtmlInput = ({html, ...props}) => {
         return (
@@ -91,22 +115,64 @@ const getMail = (event) => {
             const newId = Math.max(...relatedStaffs.map(p => p.id)) + 1;
             setRelatedStaffs([...relatedStaffs, {
                 id: newId,
-                name: '',
-                age: '',
-                skill: '',
-                availableTime: '',
-                hourlyRate: '¥8500',
-                details: ''
+                氏名: '',
+                年齢: '',
+                スキル: '',
+                最寄駅: '',
+                稼働可能時間: '',
+                日本語: '',
+                英語: '',
+                稼働年数: '',
+                来日年数: '',
+                履歴書: '',
+                備考: ''
             }]);
         } else {
             setRelatedStaffs([...relatedStaffs, {
                 id: 1,
-                name: '',
-                age: '',
-                skill: '',
-                availableTime: '',
-                hourlyRate: '¥8500',
-                details: ''
+                氏名: '',
+                年齢: '',
+                スキル: '',
+                最寄駅: '',
+                稼働可能時間: '',
+                日本語: '',
+                英語: '',
+                稼働年数: '',
+                来日年数: '',
+                履歴書: '',
+                備考: ''
+            }]);
+        }
+    };
+    const addEventsRow = () => {
+        if (relatedEvents.length > 0) {
+            const newId = Math.max(...relatedEvents.map(e => e.id)) + 1;
+            setRelatedEvents([...relatedEvents, {
+                id: newId,
+                案件名: '',
+                案件概要: '',
+                作業工程: '',
+                作業場所: '',
+                期間: '',
+                必要なスキル: '',
+                単価: '',
+                時間制限: '',
+                連絡先: '',
+                備考: ''
+            }]);
+        } else {
+            setRelatedEvents([...relatedStaffs, {
+                id: 1,
+                案件名: '',
+                案件概要: '',
+                作業工程: '',
+                作業場所: '',
+                期間: '',
+                必要なスキル: '',
+                単価: '',
+                時間制限: '',
+                連絡先: '',
+                備考: ''
             }]);
         }
     };
@@ -114,11 +180,19 @@ const getMail = (event) => {
     const deletePersonnelRow = (id) => {
         setRelatedStaffs(relatedStaffs.filter(p => p.id !== id));
     };
+    const deleteEventRow = (id) => {
+        setRelatedEvents(relatedEvents.filter(e => e.id !== id));
+    };
 
     const handlePersonnelChange = (id, field, value) => {
         setRelatedStaffs(relatedStaffs.map(p =>
             p.id === id ? {...p, [field]: value} : p
         ));
+    };
+    const handleEventChange = (id, field, value) => {
+        setRelatedEvents(relatedEvents.map(e =>
+            e.id === id ? {...e, [field]: value} : e
+        ))
     };
     const styles = {
         '0': { // 稼働中
@@ -169,6 +243,22 @@ const getMail = (event) => {
             .catch(error => {
                 console.error('メール取得エラー:', error);
             });
+    }
+
+    function doSubmitEvents() {
+        const params = {
+            MSGID:mail.MSGID,
+            relatedEvents:relatedEvents
+        }
+        console.log(params)
+    }
+
+    function doSubmitStaffs() {
+        const params = {
+            MSGID:mail.MSGID,
+            relatedStaffs:relatedStaffs
+        }
+        console.log(params)
     }
 
     return (
@@ -242,28 +332,24 @@ const getMail = (event) => {
                         />
                     </Box>
 
-                    <Box sx={{mb: 1}}>
-                        <Typography variant="subtitle1" sx={{mb: 1, color: '#666'}}>
+                    <Box sx={{ mb: 1 }}>
+                        <Typography variant="subtitle1" sx={{ mb: 1, color: '#666' }}>
                             本文
                         </Typography>
-                        <TextField
-                            fullWidth
-                            multiline
-                            rows={8}
-                            value="" // 必须留空，否则会覆盖自定义输入
-                            variant="outlined"
-                            InputProps={{
-                                readOnly: true,
-                                inputComponent: HtmlInput, // 替换默认 input 组件
-                                inputProps: {html: mail.本文_HTML}, // 传递HTML内容
-                            }}
+
+                        <Box
+                            ref={scrollRef}
+                            onScroll={handleScroll}
                             sx={{
                                 bgcolor: '#f9f9f9',
-                                '& .MuiInputBase-root': {
-                                    maxHeight: '300px',       // 容器高度限制
-                                    overflow: 'auto',         // 滚动条
-                                },
+                                p: 2,
+                                border: '1px solid #ccc',
+                                borderRadius: 1,
+                                maxHeight: '300px',
+                                overflow: 'auto',
+                                whiteSpace: 'pre-wrap',
                             }}
+                            dangerouslySetInnerHTML={{ __html: mail.本文_HTML }}
                         />
                     </Box>
 
@@ -342,14 +428,158 @@ const getMail = (event) => {
 
                     {/* 案件情報確認标签内容 */}
                     {tabValue === 0 && (
-                        <Box sx={{p: 3}}>
-                            <Typography>案件情報確認の内容がここに表示されます。</Typography>
+                        <Box sx={{width: '900px',
+                            overflowX: 'auto',
+                            p: 3,
+                            whiteSpace: 'nowrap'}}>
+                            <TableContainer>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow sx={{bgcolor: '#f8f9fa'}}>
+                                            <TableCell sx={{fontWeight: 'bold', fontSize: '0.875rem'}}>案件名</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>案件概要</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>作業工程</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>作業場所</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>期間</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>必要なスキル</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>募集人数</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>単価</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>時間制限</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>連絡先</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>備考</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {relatedEvents.map((relatedEvent) => (
+                                            <TableRow key={relatedEvent.id}>
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="案件名"
+                                                    value={relatedEvent.案件名}
+                                                    placeholder="案件名を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="案件概要"
+                                                    value={relatedEvent.案件概要}
+                                                    placeholder="案件概要を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="作業工程"
+                                                    value={relatedEvent.作業工程}
+                                                    placeholder="作業工程を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="作業場所"
+                                                    value={relatedEvent.作業場所}
+                                                    placeholder="作業場所を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="期間"
+                                                    value={relatedEvent.期間}
+                                                    placeholder="期間を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="必要なスキル"
+                                                    value={relatedEvent.必要なスキル}
+                                                    placeholder="必要なスキルを..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="募集人数"
+                                                    value={relatedEvent.募集人数}
+                                                    placeholder="募集人数を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="単価"
+                                                    value={relatedEvent.単価}
+                                                    placeholder="単価を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="時間制限"
+                                                    value={relatedEvent.時間制限}
+                                                    placeholder="時間制限を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="連絡先"
+                                                    value={relatedEvent.連絡先}
+                                                    placeholder="連絡先を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedEvent.id}
+                                                    fieldKey="備考"
+                                                    value={relatedEvent.備考}
+                                                    placeholder="備考を..."
+                                                    onChange={handleEventChange}
+                                                />
+                                                <TableCell>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => deleteEventRow(relatedEvent.id)}
+                                                        sx={{color: '#f44336'}}
+                                                    >
+                                                        <DeleteIcon fontSize="small"/>
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+
+                            <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 3, px: 2}}>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<AddCircleOutlineIcon/>}
+                                    onClick={addEventsRow}
+                                    sx={{
+                                        color: '#f44336',
+                                        borderColor: '#f44336',
+                                        '&:hover': {
+                                            borderColor: '#d32f2f',
+                                            bgcolor: 'rgba(244, 67, 54, 0.04)'
+                                        }
+                                    }}
+                                >
+                                    行追加
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={doSubmitEvents}
+                                    sx={{
+                                        bgcolor: '#4caf50',
+                                        '&:hover': {bgcolor: '#388e3c'}
+                                    }}
+                                >
+                                    登録
+                                </Button>
+                            </Box>
                         </Box>
                     )}
 
                     {/* 人材情報管理标签内容 */}
                     {tabValue === 1 && (
-                        <Box sx={{p: 3}}>
+                        <Box sx={{width: '900px',
+                            overflowX: 'auto',
+                            p: 3,
+                            whiteSpace: 'nowrap'}}>
                             <TableContainer>
                                 <Table>
                                     <TableHead>
@@ -357,77 +587,113 @@ const getMail = (event) => {
                                             <TableCell sx={{fontWeight: 'bold', fontSize: '0.875rem'}}>氏名</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>年齢</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>スキル</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>最寄駅</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>稼働可能時間</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>想定単価</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>詳細</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>単価</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>日本語</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>英語</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>稼働年数</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>来日年数</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>営業状況</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>履歴書</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', fontSize: '0.875rem' }}>備考</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {relatedStaffs.map((relatedStaff) => (
                                             <TableRow key={relatedStaff.id}>
-                                                <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        placeholder="名前を..."
-                                                        value={relatedStaff.name}
-                                                        onChange={(e) => handlePersonnelChange(relatedStaff.id, 'name', e.target.value)}
-                                                        sx={{minWidth: 100}}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        placeholder="年..."
-                                                        value={relatedStaff.age}
-                                                        onChange={(e) => handlePersonnelChange(relatedStaff.id, 'age', e.target.value)}
-                                                        sx={{width: 60}}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <FormControl size="small" sx={{minWidth: 80}}>
-                                                        <Select
-                                                            value={relatedStaff.skill}
-                                                            onChange={(e) => handlePersonnelChange(relatedStaff.id, 'skill', e.target.value)}
-                                                            displayEmpty
-                                                        >
-                                                            <MenuItem value="">スキル...</MenuItem>
-                                                            <MenuItem value="Java">Java</MenuItem>
-                                                            <MenuItem value="Python">Python</MenuItem>
-                                                            <MenuItem value="React">React</MenuItem>
-                                                        </Select>
-                                                    </FormControl>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <FormControl size="small" sx={{minWidth: 80}}>
-                                                        <Select
-                                                            value={relatedStaff.availableTime}
-                                                            onChange={(e) => handlePersonnelChange(relatedStaff.id, 'availableTime', e.target.value)}
-                                                            displayEmpty
-                                                        >
-                                                            <MenuItem value="">Sele...</MenuItem>
-                                                            <MenuItem value="フルタイム">フルタイム</MenuItem>
-                                                            <MenuItem value="パートタイム">パートタイム</MenuItem>
-                                                        </Select>
-                                                    </FormControl>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        value={relatedStaff.hourlyRate}
-                                                        onChange={(e) => handlePersonnelChange(relatedStaff.id, 'hourlyRate', e.target.value)}
-                                                        sx={{width: 80}}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        size="small"
-                                                        placeholder="詳細を入力"
-                                                        value={relatedStaff.details}
-                                                        onChange={(e) => handlePersonnelChange(relatedStaff.id, 'details', e.target.value)}
-                                                        sx={{minWidth: 100}}
-                                                    />
-                                                </TableCell>
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="氏名"
+                                                    value={relatedStaff.氏名}
+                                                    placeholder="氏名を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="年齢"
+                                                    value={relatedStaff.年齢}
+                                                    placeholder="年齢を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="スキル"
+                                                    value={relatedStaff.スキル}
+                                                    placeholder="スキルを..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="最寄駅"
+                                                    value={relatedStaff.最寄駅}
+                                                    placeholder="最寄駅を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="稼働可能時間"
+                                                    value={relatedStaff.稼働可能時間}
+                                                    placeholder="稼働可能時間を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="単価"
+                                                    value={relatedStaff.単価}
+                                                    placeholder="単価を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="日本語"
+                                                    value={relatedStaff.日本語}
+                                                    placeholder="日本語を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="英語"
+                                                    value={relatedStaff.英語}
+                                                    placeholder="英語を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="稼働年数"
+                                                    value={relatedStaff.稼働年数}
+                                                    placeholder="稼働年数を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="来日年数"
+                                                    value={relatedStaff.来日年数}
+                                                    placeholder="来日年数を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="営業状況"
+                                                    value={relatedStaff.営業状況}
+                                                    placeholder="営業状況を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="スキルシート"
+                                                    value={relatedStaff.スキルシート}
+                                                    placeholder="履歴書を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
+                                                <EditablePopoverCell
+                                                    id={relatedStaff.id}
+                                                    fieldKey="備考"
+                                                    value={relatedStaff.備考}
+                                                    placeholder="備考を..."
+                                                    onChange={handlePersonnelChange}
+                                                />
                                                 <TableCell>
                                                     <IconButton
                                                         size="small"
@@ -461,6 +727,7 @@ const getMail = (event) => {
                                 </Button>
                                 <Button
                                     variant="contained"
+                                    onClick={doSubmitStaffs}
                                     sx={{
                                         bgcolor: '#4caf50',
                                         '&:hover': {bgcolor: '#388e3c'}

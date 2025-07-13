@@ -131,7 +131,7 @@ const ProjectTable = () => {
             projects.find(project => project.id === id)?.案件ID
         ).filter(Boolean);
         api.deleteProjectsByIds(ids).then(response => {
-            getProjects();
+            findByConditions()
             setUpdateProjects([]);
         }).catch(error => {
             console.error('メール取得エラー:', error);
@@ -193,7 +193,7 @@ const ProjectTable = () => {
             setDoUpdate(true)
         } else {
             api.updateProjectsBatch(updateProjects).then(response => {
-                getProjects();
+                findByConditions()
                 setUpdateProjects([]);
             }).catch(error => {
                 console.error('メール取得エラー:', error);

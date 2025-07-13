@@ -639,26 +639,24 @@ const StaffListTable = () => {
                                             fontSize: '0.8rem',
                                             py: 1,
                                             lineHeight: '1.5',
-                                            cursor: 'pointer', // 添加手型光标
-                                            color: 'primary.main', // 使用主题主色
-                                            textDecoration: 'underline', // 添加下划线
+                                            cursor: 'pointer',
+                                            color: 'primary.main',
+                                            textDecoration: 'underline',
                                             '&:hover': {
-                                                backgroundColor: 'action.hover', // 悬停背景色
-                                                textDecoration: 'none' // 悬停时取消下划线
+                                                backgroundColor: 'action.hover',
+                                                textDecoration: 'none'
                                             }
                                         }}
-                                        onClick={() => {
-                                            // 创建下载链接
-                                            const link = document.createElement('a');
-                                            link.href = staff.推薦案件ID1; // 假设这是文件路径
-                                            link.download = staff.推薦案件ID1.split('/').pop(); // 获取文件名
-                                            document.body.appendChild(link);
-                                            link.click();
-                                            document.body.removeChild(link);
-                                        }}
+
                                     >
-                                        {/*{staff.推薦案件ID1.split('/').pop()} /!* 只显示文件名 *!/*/}
-                                        test
+                                        {/*{staff.スキルシート ? staff.スキルシート.split('/').pop() : 'ファイルなし'}*/}
+                                        <a
+                                            href="file:///D:/a/要件定義1.3.xlsx"
+                                            download
+                                            style={{ color: 'inherit', textDecoration: 'inherit' }}
+                                        >
+                                            test
+                                        </a>
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',
