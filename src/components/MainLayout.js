@@ -1,13 +1,17 @@
-import { Outlet, Link, useLocation,useNavigate } from 'react-router-dom';
-import { Tabs, Tab, Box, Stack } from '@mui/material';
+import { Outlet, useLocation,useNavigate } from 'react-router-dom';
+import {Tabs, Tab, Box, Stack, Button, CircularProgress} from '@mui/material';
 import AttachEmailOutlinedIcon from '@mui/icons-material/AttachEmailOutlined';
 import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import DownloadIcon from '@mui/icons-material/Download';
+import api from "../api/api";
+import React, {useState} from 'react';
+import snackbar from "./tools/Snackbar";
 const MainLayout = () => {
     const navigate = useNavigate(); // 在组件内添加
   const location = useLocation();
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
   // 根据当前路径确定激活的Tab
     const getActiveTab = () => {
         const basePath = location.pathname.split('/')[1]; // 始终取第一级路径
@@ -24,8 +28,24 @@ const MainLayout = () => {
       backgroundColor: 'transparent',
     },
   };
-
-  return (
+    function fetchMails() {
+        setIsLoading(true);
+        console.log(isLoading)
+        try {
+            api.processEmailsOnce().then(response => {
+                setRefreshTrigger(prev => prev + 1);
+                snackbar.show('メールの取得に成功しました', 'success');
+            }).catch(error => {
+                console.error('メール取得エラー:', error);
+            });
+        } catch (error) {
+            console.error('メール取得エラー:', error);
+        } finally {
+            setIsLoading(false);
+            console.log(isLoading)
+        }
+    }
+    return (
     <Box>
       {/* 顶部导航栏 */}
       <Box sx={{
@@ -79,29 +99,24 @@ const MainLayout = () => {
         </Tabs>
           {/* 右侧按钮（仅在 /mails 页面显示） */}
           {getActiveTab() === '/mails' && (
-              <button
-                  style={{
-                      backgroundColor: '#1976d2',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '4px',
-                      padding: '6px 12px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      marginLeft: '1155px',
+              <Button
+                  variant="contained"
+                  startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <DownloadIcon />}
+                  onClick={fetchMails}
+                  disabled={isLoading}
+                  sx={{
+                      marginLeft: 'auto',
+                      marginRight: '9.5%',
                       height: '40px',
-                      display: 'flex',          // 添加 flex 布局
-                      alignItems: 'center',    // 垂直居中
-                      justifyContent: 'center', // 水平居中（可选）
-                      gap: '8px'               // 图标和文本之间的间距
-                  }}
-                  onClick={() => {
-                      console.log('新規追加 clicked');
+                      fontWeight: 'bold',
+                      backgroundColor: '#1976d2',
+                      '&:hover': {
+                          backgroundColor: '#1565c0'
+                      }
                   }}
               >
-                  <DownloadIcon fontSize="small"/>
-                  メール取得
-              </button>
+                  {isLoading ? '取得中...' : 'メール取得'}
+              </Button>
           )}
       </Box>
 
@@ -114,7 +129,7 @@ const MainLayout = () => {
             <Box sx={{
                 width: '80%'
             }}>
-                <Outlet/>
+                <Outlet context={{ refreshTrigger }}/>
             </Box>
         </Box>
     </Box>

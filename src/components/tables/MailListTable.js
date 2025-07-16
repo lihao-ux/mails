@@ -20,7 +20,7 @@ import {
     Typography
 } from '@mui/material';
 import api from '../../api/api';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useOutletContext} from 'react-router-dom';
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers';
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import ja from 'date-fns/locale/ja'; // 导入日语本地化
@@ -33,7 +33,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Alert from '@mui/material/Alert';
-
+import snackbar from '../tools/Snackbar';
 const MailListTable = () => {
     const [mails, setMails] = useState([]); // 用于存储 API 返回值
     const [updateMails, setupdateMails] = useState([]);
@@ -52,6 +52,10 @@ const MailListTable = () => {
             }
         });
     };
+    const { refreshTrigger } = useOutletContext(); // 接收父组件传递的refreshTrigger
+    useEffect(() => {
+        getEmails();
+    }, [refreshTrigger]);
 
     useEffect(() => {
         getEmails();
@@ -135,6 +139,7 @@ const MailListTable = () => {
             api.updateMessagesStatusBatch(newArray).then(response => {
                 handleSearch()
                 setupdateMails([]);
+                snackbar.show('メールの変更に成功しました', 'success');
             })
                 .catch(error => {
                     console.error('メール取得エラー:', error);

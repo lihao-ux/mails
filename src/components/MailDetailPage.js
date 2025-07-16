@@ -115,6 +115,7 @@ const getMail = (event) => {
             const newId = Math.max(...relatedStaffs.map(p => p.id)) + 1;
             setRelatedStaffs([...relatedStaffs, {
                 id: newId,
+                msgid:mail.MSGID,
                 氏名: '',
                 年齢: '',
                 スキル: '',
@@ -130,6 +131,7 @@ const getMail = (event) => {
         } else {
             setRelatedStaffs([...relatedStaffs, {
                 id: 1,
+                msgid:mail.MSGID,
                 氏名: '',
                 年齢: '',
                 スキル: '',
@@ -150,6 +152,7 @@ const getMail = (event) => {
             setRelatedEvents([...relatedEvents, {
                 id: newId,
                 案件名: '',
+                msgid:mail.MSGID,
                 案件概要: '',
                 作業工程: '',
                 作業場所: '',
@@ -164,6 +167,7 @@ const getMail = (event) => {
             setRelatedEvents([...relatedStaffs, {
                 id: 1,
                 案件名: '',
+                msgid:mail.MSGID,
                 案件概要: '',
                 作業工程: '',
                 作業場所: '',
@@ -247,7 +251,7 @@ const getMail = (event) => {
 
     function doSubmitEvents() {
         const params = {
-            MSGID:mail.MSGID,
+            msg:mail.MSGID,
             relatedEvents:relatedEvents
         }
         console.log(params)

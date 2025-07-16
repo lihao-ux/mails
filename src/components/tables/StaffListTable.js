@@ -639,24 +639,20 @@ const StaffListTable = () => {
                                             fontSize: '0.8rem',
                                             py: 1,
                                             lineHeight: '1.5',
-                                            cursor: 'pointer',
-                                            color: 'primary.main',
-                                            textDecoration: 'underline',
+                                            // Conditional styles based on whether スキルシート exists
+                                            cursor: staff.スキルシート ? 'pointer' : 'default',
+                                            color: staff.スキルシート ? 'primary.main' : 'inherit',
+                                            textDecoration: staff.スキルシート ? 'underline' : 'none',
+                                            userSelect: 'none',
+                                            WebkitUserModify: 'read-only',
                                             '&:hover': {
-                                                backgroundColor: 'action.hover',
-                                                textDecoration: 'none'
+                                                backgroundColor: staff.スキルシート ? 'action.hover' : 'inherit',
+                                                textDecoration: staff.スキルシート ? 'none' : 'inherit'
                                             }
                                         }}
-
+                                        onClick={staff.スキルシート ? () => api.downloadFileEndpoint(staff.MSGID,staff.スキルシート) : undefined}
                                     >
-                                        {/*{staff.スキルシート ? staff.スキルシート.split('/').pop() : 'ファイルなし'}*/}
-                                        <a
-                                            href="file:///D:/a/要件定義1.3.xlsx"
-                                            download
-                                            style={{ color: 'inherit', textDecoration: 'inherit' }}
-                                        >
-                                            test
-                                        </a>
+                                        {staff.スキルシート || ''}
                                     </TableCell>
                                     <TableCell sx={{
                                         border: '1px solid #ddd',

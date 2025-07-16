@@ -27,26 +27,16 @@ const apiService = {
     getEngineersByMsgid: (msgid) => api.get(`/engineers/by-msgid/${msgid}`),
     updateEngineerRecommendations: (engineerId, projectIds) =>
         api.put(`/engineers/${engineerId}/recommendations`, { recommended_projects: projectIds }),
+    downloadFileEndpoint: (MSGID, excleName) => api.get(`/download/${MSGID}/${excleName}`),
 
     searchEngineers: (data) => api.post('/engineers/search', data),
     updateEngineersBatch: (updates) => api.post('/engineers/batch-update',{ engineers: updates }),
     getAvailableEngineersSummary:() => api.get(`/engineers/available-summary`),
-    // ======= 推荐相关 =======
-    recommendEngineers: (projectInfo) => api.post('/recommend/engineers', projectInfo),
-    recommendProjects: (engineerInfo) => api.post('/recommend/projects', engineerInfo),
 
     // ======= 邮件处理相关 =======
     processEmailsOnce: () => api.post('/emails/process'),
-    getEmailProcessStatus: () => api.get('/emails/status'),
-
-    // ======= ID生成相关 =======
-    generateMsgid: () => api.get('/generate/msgid'),
-    generateProjectId: () => api.get('/generate/project-id'),
-    generateEngineerId: () => api.get('/generate/engineer-id'),
-
-    // ======= 工具类 =======
-    checkEmailExists: (emailId) => api.get(`/check-email/${emailId}`),
-    getMessageByEmailId: (emailId) => api.get(`/message-by-email/${emailId}`),
+    // ======= 用户管理相关 =======
+    authenticateUser:(params) => api.post('/auth/login', params),
 };
 
 export default apiService;
