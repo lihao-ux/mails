@@ -37,6 +37,8 @@ const apiService = {
     processEmailsOnce: () => api.post('/emails/process'),
     // ======= 用户管理相关 =======
     authenticateUser:(params) => api.post('/auth/login', params),
+    changePassword:(params) => api.post('/users/change-password', params),
+    searchUsers:() => api.get(`/users/search`),
 };
 
 export default apiService;

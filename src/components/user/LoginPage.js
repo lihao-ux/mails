@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useContext, useState} from 'react';
 import {
     Box,
     Paper,
@@ -11,8 +11,10 @@ import { useNavigate } from 'react-router-dom';
 import snackbar from '../tools/Snackbar';
 import PasswordChangeDialog from '../tools/CheckCircleOutlineIcon';
 import api from '../../api/api';
+import { UserContext } from '../tools/UserContext';
 const LoginPage = ({ setIsAuthenticated }) => {
     const navigate = useNavigate();
+    const { login } = useContext(UserContext);
     const [formData, setFormData] = useState({
         username: '',
         password: ''
@@ -21,10 +23,18 @@ const LoginPage = ({ setIsAuthenticated }) => {
         username: false,
         password: false
     });
+    const [accountRole, setAccountRole] = useState('');
     const [openDialog, setOpenDialog] = useState(false);
     const handlePasswordChangeSuccess = () => {
-        setIsAuthenticated(true);
-        navigate('/');
+        console.log(accountRole)
+        if (accountRole==='10'){
+            navigate('/users');
+        }else if(accountRole==='30'){
+            navigate('/');
+        }
+        snackbar.show('ログイン成功', 'success');
+        // setIsAuthenticated(true);
+        // navigate('/');
     };
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -65,12 +75,19 @@ const LoginPage = ({ setIsAuthenticated }) => {
             // 异步调用API
             const response = await api.authenticateUser(formData);
             console.log(response)
+            setAccountRole(response.user.role)
             if (response.user.status==='0') {
+                login(response.user);
                 setIsAuthenticated(true);
-                navigate('/');
+                if (response.user.role==='10'){
+                    navigate('/');
+                }else {
+                    navigate('/');
+                }
             } else if (response.user.status==='1'){
                 snackbar.show('3回以上パス間違った、管理者ログインしてアカウント初期化必要', 'error');
             }else if (response.user.status==='2'){
+                login(response.user);
                 setOpenDialog(true);
             }
         } catch (error) {
@@ -166,6 +183,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
                 open={openDialog}
                 onClose={() => setOpenDialog(false)}
                 onPasswordChangeSuccess={handlePasswordChangeSuccess}
+                username={formData.username}
             />
         </Box>
     );

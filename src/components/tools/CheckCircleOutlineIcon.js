@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -13,9 +13,10 @@ import {
     CircularProgress
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import api from '../../api/api';
+import snackbar from "./Snackbar";
 
-const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
-    const [currentPassword, setCurrentPassword] = useState('');
+const PasswordChangeDialog = ({open, onClose, onPasswordChangeSuccess, username}) => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errors, setErrors] = useState({
@@ -25,11 +26,10 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
     });
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false); // 添加加载状态
-
+    const [errorMessage, setErrorMessage] = useState('');
     useEffect(() => {
         if (!open) {
             // 当对话框关闭时重置所有状态
-            setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
             setErrors({
@@ -39,6 +39,7 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
             });
             setSuccess(false);
             setLoading(false);
+            setErrorMessage('')
         }
     }, [open]);
 
@@ -61,7 +62,6 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
 
     const handleSubmit = async () => {
         const newErrors = {
-            current: !currentPassword,
             new: !validatePassword(newPassword).isValid,
             confirm: newPassword !== confirmPassword
         };
@@ -78,7 +78,16 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
             // 这里替换为实际的API调用
             // const response = await api.changePassword({ currentPassword, newPassword });
             // 模拟API调用
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const params = {
+                username: username,
+                new_password: newPassword
+            }
+            const response = await api.changePassword(params)
+            console.log(response)
+            if (!response.success){
+                setErrorMessage(response.error)
+                return
+            }
 
             // 假设API调用成功
             setSuccess(true);
@@ -87,13 +96,8 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
             if (onPasswordChangeSuccess) {
                 onPasswordChangeSuccess();
             }
-
-            // 2秒后自动关闭对话框
-            setTimeout(() => {
-                setSuccess(false);
-                onClose();
-            }, 2000);
         } catch (error) {
+            console.log(11111)
             console.error('Password change failed:', error);
             // 显示错误消息
             setErrors({
@@ -117,24 +121,16 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                 </Typography>
 
                 {success && (
-                    <Alert severity="success" sx={{ mb: 2 }}>
+                    <Alert severity="success" sx={{mb: 2}}>
                         パスワードが正常に変更されました
                     </Alert>
                 )}
-
-                <Box sx={{ mt: 2 }}>
-                    <TextField
-                        fullWidth
-                        label="現在のパスワード"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        error={errors.current}
-                        helperText={errors.current && (errors.new || errors.confirm ? "初期パスワードを入力してください" : "現在のパスワードが正しくありません")}
-                        margin="normal"
-                        disabled={loading}
-                    />
-
+                {errorMessage && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {errorMessage}
+                    </Alert>
+                )}
+                <Box sx={{mt: 2}}>
                     <TextField
                         fullWidth
                         label="新しいパスワード"
@@ -159,7 +155,7 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                         disabled={loading}
                     />
 
-                    <Box sx={{ mt: 3, mb: 2 }}>
+                    <Box sx={{mt: 3, mb: 2}}>
                         <Typography variant="subtitle2" gutterBottom>
                             パスワード要件:
                         </Typography>
@@ -170,7 +166,7 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                                         color={passwordValidation.isLengthValid ? "success" : "disabled"}
                                         fontSize="small"
                                     />
-                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                    <Typography variant="body2" sx={{ml: 1}}>
                                         8文字以上
                                     </Typography>
                                 </Box>
@@ -181,7 +177,7 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                                         color={passwordValidation.hasUpperCase ? "success" : "disabled"}
                                         fontSize="small"
                                     />
-                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                    <Typography variant="body2" sx={{ml: 1}}>
                                         大文字を含む
                                     </Typography>
                                 </Box>
@@ -192,7 +188,7 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                                         color={passwordValidation.hasLowerCase ? "success" : "disabled"}
                                         fontSize="small"
                                     />
-                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                    <Typography variant="body2" sx={{ml: 1}}>
                                         小文字を含む
                                     </Typography>
                                 </Box>
@@ -203,7 +199,7 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                                         color={passwordValidation.hasNumber ? "success" : "disabled"}
                                         fontSize="small"
                                     />
-                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                    <Typography variant="body2" sx={{ml: 1}}>
                                         数字を含む
                                     </Typography>
                                 </Box>
@@ -214,7 +210,7 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                                         color={passwordValidation.hasSpecialChar ? "success" : "disabled"}
                                         fontSize="small"
                                     />
-                                    <Typography variant="body2" sx={{ ml: 1 }}>
+                                    <Typography variant="body2" sx={{ml: 1}}>
                                         記号を含む
                                     </Typography>
                                 </Box>
@@ -223,7 +219,7 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                     </Box>
                 </Box>
             </DialogContent>
-            <DialogActions sx={{ p: 3 }}>
+            <DialogActions sx={{p: 3}}>
                 <Button onClick={onClose} variant="outlined" disabled={loading}>
                     キャンセル
                 </Button>
@@ -231,8 +227,8 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                     onClick={handleSubmit}
                     variant="contained"
                     color="primary"
-                    disabled={!currentPassword || !newPassword || !confirmPassword || loading}
-                    sx={{ position: 'relative' }}
+                    disabled={!newPassword || !confirmPassword || loading}
+                    sx={{position: 'relative'}}
                 >
                     {loading ? (
                         <>
@@ -241,8 +237,8 @@ const PasswordChangeDialog = ({ open, onClose, onPasswordChangeSuccess }) => {
                                 position: 'absolute',
                                 left: '50%',
                                 marginLeft: '-12px',
-                            }} />
-                            <span style={{ opacity: 0 }}>パスワードを変更</span>
+                            }}/>
+                            <span style={{opacity: 0}}>パスワードを変更</span>
                         </>
                     ) : 'パスワードを変更'}
                 </Button>
