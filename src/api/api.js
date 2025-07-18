@@ -38,7 +38,10 @@ const apiService = {
     // ======= 用户管理相关 =======
     authenticateUser:(params) => api.post('/auth/login', params),
     changePassword:(params) => api.post('/users/change-password', params),
-    searchUsers:() => api.get(`/users/search`),
+    searchUsers:(params) => api.post(`/users/search`,params),
+    createUser:(params) => api.post('/users/create', params),
+    deleteUsers:(params) => api.post('/users/delete', params),
+    resetUsersStatus:(params) => api.post('/users/reset-status', params),
 };
 
 export default apiService;
