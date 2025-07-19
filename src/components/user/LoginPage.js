@@ -78,9 +78,8 @@ const LoginPage = ({ setIsAuthenticated }) => {
             setAccountRole(response.user.role)
             if (response.user.status==='0') {
                 login(response.user);
-                setIsAuthenticated(true);
                 if (response.user.role==='10'){
-                    navigate('/');
+                    navigate('/user');
                 }else {
                     navigate('/');
                 }

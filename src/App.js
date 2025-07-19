@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Box } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './styles/styles.css';
 
@@ -13,8 +13,28 @@ import LoginPage from './components/user/LoginPage';
 
 import { UserProvider, UserContext } from './components/tools/UserContext';
 
+// 加载页面组件
+function LoadingPage() {
+    return (
+        <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="100vh"
+        >
+            <CircularProgress />
+        </Box>
+    );
+}
+
 function AppRoutes() {
-    const { user } = useContext(UserContext);
+    const { user, isInitialized } = useContext(UserContext);
+
+    // 如果还未初始化完成，显示加载页面
+    if (!isInitialized) {
+        return <LoadingPage />;
+    }
+
     const isAuthenticated = !!user;
 
     return (

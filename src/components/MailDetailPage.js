@@ -151,9 +151,13 @@ const getMail = (event) => {
             const newId = Math.max(...relatedEvents.map(e => e.id)) + 1;
             setRelatedEvents([...relatedEvents, {
                 id: newId,
+                案件ID: "",
                 案件名: '',
-                msgid:mail.MSGID,
+                MSGID:mail.MSGID,
+                人材ID:[],
+                ステータス:'',
                 案件概要: '',
+                募集人数: '',
                 作業工程: '',
                 作業場所: '',
                 期間: '',
@@ -166,9 +170,13 @@ const getMail = (event) => {
         } else {
             setRelatedEvents([...relatedStaffs, {
                 id: 1,
+                案件ID: "",
                 案件名: '',
-                msgid:mail.MSGID,
+                MSGID:mail.MSGID,
+                人材ID:[],
+                ステータス:'',
                 案件概要: '',
+                募集人数: '',
                 作業工程: '',
                 作業場所: '',
                 期間: '',

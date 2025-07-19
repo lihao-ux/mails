@@ -4,6 +4,7 @@ import AttachEmailOutlinedIcon from '@mui/icons-material/AttachEmailOutlined';
 import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import DownloadIcon from '@mui/icons-material/Download';
+import LogoutIcon from '@mui/icons-material/Logout';
 import api from "../api/api";
 import React, {useContext, useEffect, useState} from 'react';
 import snackbar from "./tools/Snackbar";
@@ -21,8 +22,26 @@ const MainLayout = () => {
     }, []);
     // 根据当前路径确定激活的Tab
     const getActiveTab = () => {
-        const basePath = location.pathname.split('/')[1]; // 始终取第一级路径
-        return basePath ? `/${basePath}` : '/mails'; // 处理根路径
+        const basePath = location.pathname.split('/')[1]; // 获取第一级路径
+        const currentPath = basePath ? `/${basePath}` : '/mails'; // 处理根路径
+
+        // 管理员角色(10)的特殊处理
+        if (userRole === '10') {
+            const allowedPaths = ['/users']; // 管理员允许的路径
+            if (!allowedPaths.includes(currentPath)) {
+                return '/users'; // 强制返回users路径
+            }
+        }
+
+        // 普通用户(30)的路径检查
+        if (userRole === '30') {
+            const allowedPaths = ['/mails', '/staffs', '/projects']; // 普通用户允许的路径
+            if (!allowedPaths.includes(currentPath)) {
+                return '/mails'; // 默认返回mails路径
+            }
+        }
+
+        return currentPath; // 返回当前有效路径
     };
 
     const tabSx = {
@@ -35,7 +54,10 @@ const MainLayout = () => {
             backgroundColor: 'transparent',
         },
     };
-
+    function doLogout() {
+        logout();
+        navigate('/login');
+    }
     function fetchMails() {
         setIsLoading(true);
         console.log(isLoading)
@@ -125,7 +147,7 @@ const MainLayout = () => {
                         disabled={isLoading}
                         sx={{
                             marginLeft: 'auto',
-                            marginRight: '9.5%',
+                            marginRight: '-1000px',
                             height: '40px',
                             fontWeight: 'bold',
                             backgroundColor: '#1976d2',
@@ -137,6 +159,24 @@ const MainLayout = () => {
                         {isLoading ? '取得中...' : 'メール取得'}
                     </Button>
                 )}
+                <Button
+                    variant="contained"
+                    startIcon={isLoading ? <CircularProgress size={20} color="inherit"/> : <LogoutIcon/>}
+                    onClick={doLogout}
+                    disabled={isLoading}
+                    sx={{
+                        marginLeft: 'auto',
+                        marginRight: '9.5%',
+                        height: '40px',
+                        fontWeight: 'bold',
+                        backgroundColor: '#1976d2',
+                        '&:hover': {
+                            backgroundColor: '#1565c0'
+                        }
+                    }}
+                >
+                    {isLoading ? '取得中...' : 'logout'}
+                </Button>
             </Box>
 
             <Box sx={{
